@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(/usr/local/bin/npm install:*)",
+      "Bash(/opt/homebrew/bin/npm install:*)",
+      "Read(//usr/local/bin/**)",
+      "Read(//Users/szymon.karaszewski/.nvm/**)",
+      "Read(//Users/szymon.karaszewski/**)",
+      "Bash(command -v node)",
+      "Bash(/usr/local/bin/node --version)",
+      "Bash(ls /usr/local/bin/npm*)",
+      "Bash(/usr/local/bin/node /usr/local/lib/node_modules/npm/bin/npm-cli.js install)",
+      "Bash(PATH=\"/usr/local/bin:$PATH\" /usr/local/bin/node /usr/local/lib/node_modules/npm/bin/npm-cli.js install)",
+      "Bash(PATH=\"/usr/local/bin:$PATH\" /usr/local/bin/node /usr/local/lib/node_modules/npm/bin/npm-cli.js run build)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(pkgutil --pkgs)",
+      "Bash(pkgutil --pkg-info org.nodejs.node.pkg)",
+      "Bash(PATH=\"/usr/local/bin:$PATH\" npm install firebase --prefix /Users/szymon.karaszewski/Documents/PROJEKTY/panel-deldesk)",
+      "Bash(PATH=\"/usr/local/bin:$PATH\" node -e \"const p = require\\(''/Users/szymon.karaszewski/Documents/PROJEKTY/panel-deldesk/node_modules/firebase/package.json''\\); console.log\\(p.version\\)\")",
+      "Bash(PATH=\"/usr/local/bin:$PATH\" npm run build)"
+    ]
+  }
+}

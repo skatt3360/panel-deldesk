@@ -1,0 +1,123 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ---- React Big Calendar overrides ---- */
+.rbc-calendar {
+  font-family: inherit;
+  font-size: 13px;
+}
+
+.rbc-header {
+  padding: 8px 4px;
+  font-weight: 600;
+  color: #374151;
+  background: #f9fafb;
+  border-bottom: 1px solid #e5e7eb !important;
+}
+
+.rbc-month-view,
+.rbc-time-view,
+.rbc-agenda-view {
+  border: none !important;
+}
+
+.rbc-day-bg + .rbc-day-bg,
+.rbc-month-row + .rbc-month-row,
+.rbc-header + .rbc-header {
+  border-color: #e5e7eb !important;
+}
+
+.rbc-off-range-bg {
+  background: #f9fafb;
+}
+
+.rbc-today {
+  background-color: #eff6ff !important;
+}
+
+.rbc-toolbar {
+  padding: 12px 16px;
+  border-bottom: 1px solid #e5e7eb;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.rbc-toolbar-label {
+  font-weight: 700;
+  font-size: 16px;
+  color: #111827;
+}
+
+.rbc-btn-group button {
+  background: white;
+  border: 1px solid #d1d5db;
+  color: #374151;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.rbc-btn-group button:hover {
+  background: #f3f4f6;
+  color: #003087;
+}
+
+.rbc-btn-group button.rbc-active {
+  background: #003087;
+  color: white;
+  border-color: #003087;
+}
+
+.rbc-btn-group button:first-child {
+  border-radius: 8px 0 0 8px;
+}
+
+.rbc-btn-group button:last-child {
+  border-radius: 0 8px 8px 0;
+}
+
+.rbc-event {
+  border-radius: 6px !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+}
+
+.rbc-event:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 48, 135, 0.4);
+}
+
+.rbc-show-more {
+  color: #003087;
+  font-weight: 600;
+  font-size: 11px;
+  padding: 2px 4px;
+}
+
+.rbc-current-time-indicator {
+  background-color: #003087;
+  height: 2px;
+}
+
+/* ---- Global scrollbar styling ---- */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #d1d5db transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 999px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
