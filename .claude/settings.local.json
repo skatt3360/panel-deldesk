@@ -18,7 +18,13 @@
       "Bash(pkgutil --pkg-info org.nodejs.node.pkg)",
       "Bash(PATH=\"/usr/local/bin:$PATH\" npm install firebase --prefix /Users/szymon.karaszewski/Documents/PROJEKTY/panel-deldesk)",
       "Bash(PATH=\"/usr/local/bin:$PATH\" node -e \"const p = require\\(''/Users/szymon.karaszewski/Documents/PROJEKTY/panel-deldesk/node_modules/firebase/package.json''\\); console.log\\(p.version\\)\")",
-      "Bash(PATH=\"/usr/local/bin:$PATH\" npm run build)"
+      "Bash(PATH=\"/usr/local/bin:$PATH\" npm run build)",
+      "Bash(npm run:*)",
+      "Bash(/usr/local/bin/npm run:*)",
+      "Bash(ls /usr/local/bin/node*)",
+      "Read(//opt/homebrew/bin/**)",
+      "Bash(export PATH=\"/usr/local/bin:$PATH\")",
+      "Bash(npm --version)"
     ]
   }
 }

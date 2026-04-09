@@ -21,6 +21,7 @@ export interface Ticket {
   requesterName: string;
   requesterEmail: string;
   assignee?: string;
+  room?: string;        // sala/lokalizacja
   createdAt: string;
   updatedAt: string;
   dueDate?: string;
@@ -38,6 +39,8 @@ export interface CalendarEvent {
   type: CalendarEventType;
   description?: string;
   allDay?: boolean;
+  room?: string;
+  linkedTicketId?: string; // powiązane zgłoszenie
 }
 
 export interface DashboardStats {
@@ -54,6 +57,7 @@ export interface NewTicketForm {
   priority: TicketPriority;
   requesterName: string;
   requesterEmail: string;
+  room?: string;
 }
 
 export interface NewCalendarEventForm {
@@ -63,11 +67,13 @@ export interface NewCalendarEventForm {
   type: CalendarEventType;
   description: string;
   allDay: boolean;
+  room?: string;
 }
 
 export interface AppSettings {
   organizationName: string;
   adminEmail: string;
+  secondAdminEmail: string;
   slaHoursLow: number;
   slaHoursMedium: number;
   slaHoursHigh: number;

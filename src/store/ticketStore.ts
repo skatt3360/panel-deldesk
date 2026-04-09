@@ -13,7 +13,8 @@ const hoursAgo = (h: number) => new Date(_now.getTime() - h * 3600000).toISOStri
 
 const DEFAULT_SETTINGS: AppSettings = {
   organizationName: 'CDV - Collegium Da Vinci',
-  adminEmail: 'helpdesk@cdv.pl',
+  adminEmail: 'skatt3360@gmail.com',
+  secondAdminEmail: 'kacper.kubiak@cdv.pl',
   slaHoursLow: 72,
   slaHoursMedium: 24,
   slaHoursHigh: 8,
@@ -180,6 +181,7 @@ export const useTicketStore = create<TicketState>()((setState, getState) => {
         id, title: form.title, description: form.description,
         status: 'open', priority: form.priority, category: form.category,
         requesterName: form.requesterName, requesterEmail: form.requesterEmail,
+        room: form.room ?? '',
         createdAt: ts, updatedAt: ts, dueDate, slaBreached: false,
         comments: {
           [commentId]: { id: commentId, ticketId: id, author: 'System', authorRole: 'system', content: 'Zgłoszenie zostało utworzone.', createdAt: ts },

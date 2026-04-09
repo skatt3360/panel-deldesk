@@ -46,7 +46,7 @@ const SAMPLE_EVENTS: Record<string, CalendarEvent> = {
 interface CalendarState {
   events: CalendarEvent[];
   initialized: boolean;
-  addEvent: (form: NewCalendarEventForm) => Promise<void>;
+  addEvent: (form: NewCalendarEventForm & { linkedTicketId?: string }) => Promise<void>;
   updateEvent: (id: string, updates: Partial<CalendarEvent>) => Promise<void>;
   deleteEvent: (id: string) => Promise<void>;
 }
@@ -68,7 +68,7 @@ export const useCalendarStore = create<CalendarState>()((setState) => {
     events: [],
     initialized: false,
 
-    addEvent: async (form: NewCalendarEventForm) => {
+    addEvent: async (form: NewCalendarEventForm & { linkedTicketId?: string }) => {
       const id = `evt-${Date.now()}`;
       const newEvent: CalendarEvent = { id, ...form };
       await set(ref(db, `events/${id}`), newEvent);

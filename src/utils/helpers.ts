@@ -105,13 +105,14 @@ export const eventTypeColor: Record<CalendarEventType, string> = {
   other: '#8b5cf6',
 };
 
-export const TECHNICIANS = [
-  'Marek Wiśniewski',
-  'Katarzyna Jabłońska',
-  'Adam Szymański',
-  'Beata Kowalczyk',
-  'Rafał Nowacki',
+// Admins managing the helpdesk
+export const ADMINS = [
+  { email: 'skatt3360@gmail.com', name: 'Administrator' },
+  { email: 'kacper.kubiak@cdv.pl', name: 'Kacper Kubiak' },
 ];
+
+// For assignment dropdowns
+export const TECHNICIANS = ADMINS.map((a) => a.name);
 
 export const ALL_STATUSES: TicketStatus[] = ['open', 'in-progress', 'pending', 'resolved', 'closed'];
 export const ALL_PRIORITIES: TicketPriority[] = ['low', 'medium', 'high', 'critical'];

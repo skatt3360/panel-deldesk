@@ -2,8 +2,11 @@ import React, { useState, useCallback } from 'react';
 import { Calendar as BigCalendar, dateFnsLocalizer, Views, View } from 'react-big-calendar';
 import { format, parse, startOfWeek, getDay } from 'date-fns';
 import { pl } from 'date-fns/locale';
-import { PlusCircle, Trash2, Info } from 'lucide-react';
+import { PlusCircle, Trash2, Info, ExternalLink, MapPin } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useCalendarStore } from '../store/calendarStore';
+import { useTicketStore } from '../store/ticketStore';
+import { useAuthStore } from '../store/authStore';
 import { NewCalendarEventForm, CalendarEvent, CalendarEventType } from '../types';
 import Modal from '../components/ui/Modal';
 import Button from '../components/ui/Button';
@@ -13,6 +16,7 @@ import {
   eventTypeColor,
   ALL_EVENT_TYPES,
   formatDate,
+  ADMINS,
 } from '../utils/helpers';
 
 import 'react-big-calendar/lib/css/react-big-calendar.css';
@@ -42,13 +46,14 @@ const MESSAGES = {
   showMore: (total: number) => `+ ${total} więcej`,
 };
 
-const INITIAL_FORM: NewCalendarEventForm = {
+const INITIAL_FORM: NewCalendarEventForm & { room: string } = {
   title: '',
   start: '',
   end: '',
   type: 'maintenance',
   description: '',
   allDay: false,
+  room: '',
 };
 
 const localDatetimeToISO = (local: string): string => {
@@ -64,15 +69,19 @@ const isoToLocalDatetime = (iso: string): string => {
 };
 
 const CalendarPage: React.FC = () => {
+  const navigate = useNavigate();
   const { events, addEvent, deleteEvent } = useCalendarStore();
+  const addTicket = useTicketStore((s) => s.addTicket);
+  const { user } = useAuthStore();
 
   const [view, setView] = useState<View>(Views.MONTH);
   const [date, setDate] = useState(new Date());
   const [showAddModal, setShowAddModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
-  const [form, setForm] = useState<NewCalendarEventForm>(INITIAL_FORM);
-  const [formErrors, setFormErrors] = useState<Partial<Record<keyof NewCalendarEventForm, string>>>({});
+  const [form, setForm] = useState<NewCalendarEventForm & { room: string }>(INITIAL_FORM);
+  const [formErrors, setFormErrors] = useState<Partial<Record<string, string>>>({});
+  const [submitting, setSubmitting] = useState(false);
 
   // Map CalendarEvent to react-big-calendar event format
   const calEvents = events.map((e) => ({
@@ -117,13 +126,13 @@ const CalendarPage: React.FC = () => {
     };
   };
 
-  const setField = <K extends keyof NewCalendarEventForm>(key: K, val: NewCalendarEventForm[K]) => {
+  const setField = <K extends keyof typeof form>(key: K, val: (typeof form)[K]) => {
     setForm((f) => ({ ...f, [key]: val }));
     setFormErrors((e) => ({ ...e, [key]: undefined }));
   };
 
   const validateForm = (): boolean => {
-    const errs: Partial<Record<keyof NewCalendarEventForm, string>> = {};
+    const errs: Record<string, string> = {};
     if (!form.title.trim()) errs.title = 'Tytuł jest wymagany';
     if (!form.start) errs.start = 'Data rozpoczęcia jest wymagana';
     if (!form.end) errs.end = 'Data zakończenia jest wymagana';
@@ -134,20 +143,47 @@ const CalendarPage: React.FC = () => {
     return Object.keys(errs).length === 0;
   };
 
-  const handleSubmitAdd = (e: React.FormEvent) => {
+  const handleSubmitAdd = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) return;
-    addEvent({
-      ...form,
-      start: localDatetimeToISO(form.start),
-      end: localDatetimeToISO(form.end),
-    });
-    setShowAddModal(false);
-    setForm(INITIAL_FORM);
+    setSubmitting(true);
+
+    try {
+      const adminRecord = ADMINS.find((a) => a.email === user?.email);
+      const requesterName = adminRecord?.name ?? user?.email ?? 'Administrator';
+      const requesterEmail = user?.email ?? 'helpdesk@cdv.pl';
+
+      // Auto-create a linked ticket
+      const ticketId = await addTicket({
+        title: form.title,
+        description: form.description
+          ? `[Wydarzenie: ${eventTypeLabel[form.type]}] ${form.description}`
+          : `Wydarzenie kalendarza: ${eventTypeLabel[form.type]} — ${form.title}`,
+        category: 'Other',
+        priority: 'medium',
+        requesterName,
+        requesterEmail,
+        room: form.room,
+      });
+
+      // Add the calendar event with linked ticket ID
+      await addEvent({
+        ...form,
+        start: localDatetimeToISO(form.start),
+        end: localDatetimeToISO(form.end),
+        room: form.room,
+        linkedTicketId: ticketId,
+      });
+
+      setShowAddModal(false);
+      setForm(INITIAL_FORM);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  const handleDelete = (id: string) => {
-    deleteEvent(id);
+  const handleDelete = async (id: string) => {
+    await deleteEvent(id);
     setShowDetailModal(false);
     setSelectedEvent(null);
   };
@@ -157,7 +193,6 @@ const CalendarPage: React.FC = () => {
       {/* Toolbar */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-3 flex-wrap">
-          {/* Legend */}
           {ALL_EVENT_TYPES.map((type) => (
             <div key={type} className="flex items-center gap-1.5 text-xs text-gray-500">
               <span
@@ -287,6 +322,20 @@ const CalendarPage: React.FC = () => {
             </div>
           </div>
 
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              <MapPin size={14} className="inline mr-1" />
+              Sala / Lokalizacja
+            </label>
+            <input
+              type="text"
+              value={form.room}
+              onChange={(e) => setField('room', e.target.value)}
+              placeholder="np. Sala 204, Budynek A, Aula główna..."
+              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-cdv-blue/30 focus:border-cdv-blue"
+            />
+          </div>
+
           <div className="flex items-center gap-2">
             <input
               type="checkbox"
@@ -311,11 +360,16 @@ const CalendarPage: React.FC = () => {
             />
           </div>
 
+          <div className="flex items-start gap-2 bg-blue-50 rounded-lg p-3 text-xs text-blue-700">
+            <Info size={14} className="flex-shrink-0 mt-0.5" />
+            <span>Wydarzenie zostanie automatycznie zarejestrowane jako zgłoszenie IT w systemie.</span>
+          </div>
+
           <div className="flex gap-3 justify-end pt-2 border-t border-gray-100">
             <Button type="button" variant="ghost" onClick={() => setShowAddModal(false)}>
               Anuluj
             </Button>
-            <Button type="submit">
+            <Button type="submit" loading={submitting}>
               <PlusCircle size={15} />
               Dodaj wydarzenie
             </Button>
@@ -357,10 +411,36 @@ const CalendarPage: React.FC = () => {
                   <p className="font-medium">{formatDate(selectedEvent.end)}</p>
                 </div>
               </div>
+              {selectedEvent.room && (
+                <div className="flex items-start gap-2 text-gray-600">
+                  <MapPin size={14} className="mt-0.5 flex-shrink-0 text-gray-400" />
+                  <div>
+                    <p className="text-xs text-gray-400 mb-0.5">Sala / Lokalizacja</p>
+                    <p className="font-medium">{selectedEvent.room}</p>
+                  </div>
+                </div>
+              )}
               {selectedEvent.description && (
                 <div className="bg-gray-50 rounded-lg p-3">
                   <p className="text-xs text-gray-400 mb-1">Opis</p>
                   <p className="text-gray-700">{selectedEvent.description}</p>
+                </div>
+              )}
+              {selectedEvent.linkedTicketId && (
+                <div className="flex items-center gap-2 bg-cdv-blue/5 border border-cdv-blue/20 rounded-lg px-3 py-2">
+                  <ExternalLink size={14} className="text-cdv-blue flex-shrink-0" />
+                  <span className="text-sm text-cdv-blue font-medium">
+                    Powiązane zgłoszenie:{' '}
+                    <button
+                      onClick={() => {
+                        setShowDetailModal(false);
+                        navigate(`/tickets/${selectedEvent.linkedTicketId}`);
+                      }}
+                      className="underline hover:no-underline font-bold"
+                    >
+                      {selectedEvent.linkedTicketId}
+                    </button>
+                  </span>
                 </div>
               )}
             </div>
