@@ -50,7 +50,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         {/* Logo CDV */}
         <div className="flex items-center gap-3 px-5 py-4 border-b border-white/8">
           <div className="flex-shrink-0">
-            <CdvLogo size={42} />
+            <CdvLogo size={28} variant="white" />
           </div>
           <div>
             <div className="text-white font-extrabold text-[14px] leading-tight tracking-tight">

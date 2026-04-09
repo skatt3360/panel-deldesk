@@ -1,64 +1,33 @@
 import React from 'react';
 
 interface CdvLogoProps {
-  className?: string;
   size?: number;
+  /** 'white' for dark backgrounds, 'dark' for light backgrounds */
+  variant?: 'white' | 'dark';
+  className?: string;
 }
 
-// CDV Collegium Da Vinci – stylized wordmark SVG
-const CdvLogo: React.FC<CdvLogoProps> = ({ className = '', size = 36 }) => (
-  <svg
-    width={size}
-    height={size}
-    viewBox="0 0 120 120"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    className={className}
-  >
-    {/* Outer ring */}
-    <circle cx="60" cy="60" r="56" stroke="#FFB81C" strokeWidth="4" />
-    {/* Inner decorative ring */}
-    <circle cx="60" cy="60" r="46" stroke="#FFB81C" strokeWidth="1.5" strokeOpacity="0.4" />
+const CDV_PATH =
+  'M712.251 326.659V386.628L509.445 505.891L509.106 417.45L612.875 359.873V353.112L509.333 295.476L509.445 206.174L712.251 326.659ZM910.086 488.999H853.224L712.95 223.161L798.877 223.072L879.092 381.154L884.218 381.153L964.434 223.07L1050.36 223.159L910.086 488.999ZM206.678 386.807V326.838L409.483 206.348L409.596 295.656L306.053 353.291V360.052L409.822 417.63L409.483 506.07L206.678 386.807Z';
 
-    {/* "C" arc shape — left side */}
-    <path
-      d="M38 42 C28 50 28 70 38 78"
-      stroke="#FFB81C"
-      strokeWidth="7"
-      strokeLinecap="round"
-      fill="none"
-    />
+// Aspect ratio of the CDV symbol: 1256 × 713
+const CdvLogo: React.FC<CdvLogoProps> = ({ size = 40, variant = 'white', className = '' }) => {
+  const fill = variant === 'white' ? '#FFFFFF' : '#1E252D';
+  const w = Math.round(size * (1256 / 713));
 
-    {/* "D" shape — center */}
-    <path
-      d="M50 40 L50 80 C50 80 72 80 76 60 C80 40 60 40 50 40Z"
-      fill="#FFB81C"
-      opacity="0.15"
-    />
-    <path
-      d="M50 40 L50 80"
-      stroke="#FFB81C"
-      strokeWidth="7"
-      strokeLinecap="round"
-    />
-    <path
-      d="M50 40 C60 40 76 44 76 60 C76 76 60 80 50 80"
-      stroke="#FFB81C"
-      strokeWidth="5"
-      strokeLinecap="round"
+  return (
+    <svg
+      width={w}
+      height={size}
+      viewBox="0 0 1256 713"
       fill="none"
-    />
-
-    {/* "V" shape — right */}
-    <path
-      d="M83 40 L73 80 L63 40"
-      stroke="#FFB81C"
-      strokeWidth="6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      fill="none"
-    />
-  </svg>
-);
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      aria-label="Collegium Da Vinci"
+    >
+      <path fillRule="evenodd" clipRule="evenodd" d={CDV_PATH} fill={fill} />
+    </svg>
+  );
+};
 
 export default CdvLogo;

@@ -1,6 +1,6 @@
 export type TicketStatus = 'open' | 'in-progress' | 'pending' | 'resolved' | 'closed';
 export type TicketPriority = 'low' | 'medium' | 'high' | 'critical';
-export type TicketCategory = 'Hardware' | 'Software' | 'Network' | 'Access' | 'Other';
+export type TicketCategory = 'Hardware' | 'Software' | 'Network' | 'Access' | 'Event' | 'Other';
 
 export interface Comment {
   id: string;

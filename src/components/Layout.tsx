@@ -16,7 +16,7 @@ const Layout: React.FC = () => {
       <div className="flex h-screen items-center justify-center app-bg">
         <div className="text-center animate-fade-in">
           <div className="flex justify-center mb-4">
-            <CdvLogo size={56} />
+            <CdvLogo size={40} variant="white" />
           </div>
           <div className="w-6 h-6 border-2 border-cdv-gold/40 border-t-cdv-gold rounded-full animate-spin mx-auto mb-3" />
           <p className="text-[13px] text-white/50 font-medium">Łączenie z bazą danych…</p>

@@ -102,18 +102,18 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
   const displayTitle = ticketId ? `Zgłoszenie ${ticketId}` : title;
 
   return (
-    <header className="bg-white/80 backdrop-blur-md border-b border-surface-border px-4 lg:px-6 py-3.5 flex items-center justify-between sticky top-0 z-10">
+    <header className="bg-white/[0.06] backdrop-blur-xl border-b border-white/10 px-4 lg:px-6 py-3.5 flex items-center justify-between sticky top-0 z-10">
       {/* Left */}
       <div className="flex items-center gap-3">
         <button
           onClick={onMenuClick}
-          className="p-1.5 rounded-lg text-ink-muted hover:text-ink hover:bg-surface transition-colors lg:hidden"
+          className="p-1.5 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition-colors lg:hidden"
         >
           <Menu size={19} />
         </button>
         <div>
-          <h1 className="text-[17px] font-bold text-ink leading-tight">{displayTitle}</h1>
-          <p className="text-[11px] text-ink-faint hidden sm:block font-medium tracking-wide">
+          <h1 className="text-[17px] font-bold text-white leading-tight">{displayTitle}</h1>
+          <p className="text-[11px] text-white/40 hidden sm:block font-medium tracking-wide">
             Collegium Da Vinci — IT Helpdesk
           </p>
         </div>
@@ -125,11 +125,11 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
         <div className="relative" ref={searchRef}>
           <button
             onClick={openSearch}
-            className="hidden sm:flex items-center gap-2 px-3 py-1.5 text-[13px] text-ink-faint bg-surface border border-surface-border rounded-xl hover:border-cdv-blue/30 hover:text-ink-muted transition-all duration-200"
+            className="hidden sm:flex items-center gap-2 px-3 py-1.5 text-[13px] text-white/40 bg-white/[0.06] border border-white/10 rounded-xl hover:border-white/25 hover:text-white/70 transition-all duration-200"
           >
             <Search size={13} />
             <span>Szukaj zgłoszeń...</span>
-            <span className="text-[10px] bg-surface-border/60 text-ink-faint px-1.5 py-0.5 rounded-md font-mono">⌘K</span>
+            <span className="text-[10px] bg-white/10 text-white/30 px-1.5 py-0.5 rounded-md font-mono">⌘K</span>
           </button>
 
           {searchOpen && (
@@ -201,7 +201,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
         <div className="relative" ref={bellRef}>
           <button
             onClick={() => setNotifOpen((o) => !o)}
-            className="p-2 rounded-xl text-ink-muted hover:text-ink hover:bg-surface transition-all duration-200 relative"
+            className="p-2 rounded-xl text-white/50 hover:text-white hover:bg-white/10 transition-all duration-200 relative"
           >
             <Bell size={18} />
             {notifCount > 0 && (
@@ -278,10 +278,10 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
         {/* Open count */}
         {openTickets.length > 0 && (
           <div
-            className="hidden md:flex items-center gap-1.5 px-2.5 py-1 bg-cdv-blue-light text-cdv-blue text-[12px] font-semibold rounded-full cursor-pointer hover:bg-cdv-blue/10 transition-colors"
+            className="hidden md:flex items-center gap-1.5 px-2.5 py-1 bg-white/10 text-white/70 text-[12px] font-semibold rounded-full cursor-pointer hover:bg-white/15 transition-colors"
             onClick={() => navigate('/tickets')}
           >
-            <span className="w-1.5 h-1.5 rounded-full bg-cdv-blue animate-pulse-dot" />
+            <span className="w-1.5 h-1.5 rounded-full bg-cdv-gold animate-pulse-dot" />
             {openTickets.length} otwartych
           </div>
         )}

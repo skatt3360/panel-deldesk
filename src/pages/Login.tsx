@@ -53,7 +53,7 @@ const Login: React.FC = () => {
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center mb-4">
-            <CdvLogo size={64} />
+            <CdvLogo size={44} variant="white" />
           </div>
           <h1 className="text-2xl font-extrabold text-white tracking-tight">Panel Helpdesk</h1>
           <p className="text-white/40 text-[13px] mt-1 font-medium">CDV IT Helpdesk · Panel administracyjny</p>

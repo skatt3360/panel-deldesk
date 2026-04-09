@@ -79,6 +79,7 @@ export const categoryLabel: Record<TicketCategory, string> = {
   Software: 'Oprogramowanie',
   Network: 'Sieć',
   Access: 'Dostęp',
+  Event: 'Wydarzenie',
   Other: 'Inne',
 };
 
@@ -87,6 +88,7 @@ export const categoryColor: Record<TicketCategory, string> = {
   Software: 'bg-cyan-100 text-cyan-700',
   Network: 'bg-teal-100 text-teal-700',
   Access: 'bg-pink-100 text-pink-700',
+  Event: 'bg-amber-100 text-amber-700',
   Other: 'bg-slate-100 text-slate-600',
 };
 
@@ -116,5 +118,5 @@ export const TECHNICIANS = ADMINS.map((a) => a.name);
 
 export const ALL_STATUSES: TicketStatus[] = ['open', 'in-progress', 'pending', 'resolved', 'closed'];
 export const ALL_PRIORITIES: TicketPriority[] = ['low', 'medium', 'high', 'critical'];
-export const ALL_CATEGORIES: TicketCategory[] = ['Hardware', 'Software', 'Network', 'Access', 'Other'];
+export const ALL_CATEGORIES: TicketCategory[] = ['Hardware', 'Software', 'Network', 'Access', 'Event', 'Other'];
 export const ALL_EVENT_TYPES: CalendarEventType[] = ['maintenance', 'appointment', 'deadline', 'other'];
