@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Mail, Lock, AlertCircle, Loader2, LogIn, UserPlus, Zap } from 'lucide-react';
+import { Mail, Lock, AlertCircle, Loader2, LogIn, UserPlus } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
+import CdvLogo from '../components/CdvLogo';
 
 const Login: React.FC = () => {
   const { login, register, loading, error, clearError } = useAuthStore();
@@ -51,8 +52,8 @@ const Login: React.FC = () => {
       <div className="w-full max-w-[380px] relative animate-fade-up">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-cdv-gold mb-4 shadow-xl shadow-cdv-gold/20">
-            <Zap size={28} className="text-cdv-blue fill-cdv-blue" />
+          <div className="inline-flex items-center justify-center mb-4">
+            <CdvLogo size={64} />
           </div>
           <h1 className="text-2xl font-extrabold text-white tracking-tight">Panel Helpdesk</h1>
           <p className="text-white/40 text-[13px] mt-1 font-medium">CDV IT Helpdesk · Panel administracyjny</p>
