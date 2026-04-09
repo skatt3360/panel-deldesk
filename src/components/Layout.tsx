@@ -4,7 +4,7 @@ import Sidebar from './Sidebar';
 import Header from './Header';
 import { useTicketStore } from '../store/ticketStore';
 import { useCalendarStore } from '../store/calendarStore';
-import { Zap } from 'lucide-react';
+import CdvLogo from './CdvLogo';
 
 const Layout: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -13,20 +13,20 @@ const Layout: React.FC = () => {
 
   if (!ticketsReady || !calendarReady) {
     return (
-      <div className="flex h-screen items-center justify-center bg-surface">
+      <div className="flex h-screen items-center justify-center app-bg">
         <div className="text-center animate-fade-in">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-cdv-blue mb-5 shadow-lg">
-            <Zap size={24} className="text-cdv-gold fill-cdv-gold animate-pulse" />
+          <div className="flex justify-center mb-4">
+            <CdvLogo size={56} />
           </div>
-          <div className="w-6 h-6 border-2 border-cdv-blue/20 border-t-cdv-blue rounded-full animate-spin mx-auto mb-3" />
-          <p className="text-[13px] text-ink-muted font-medium">Łączenie z bazą danych…</p>
+          <div className="w-6 h-6 border-2 border-cdv-gold/40 border-t-cdv-gold rounded-full animate-spin mx-auto mb-3" />
+          <p className="text-[13px] text-white/50 font-medium">Łączenie z bazą danych…</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen bg-surface overflow-hidden">
+    <div className="flex h-screen app-bg overflow-hidden">
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <Header onMenuClick={() => setSidebarOpen((o) => !o)} />

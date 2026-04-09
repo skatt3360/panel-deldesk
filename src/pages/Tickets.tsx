@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Search, SlidersHorizontal, PlusCircle, ChevronUp, ChevronDown, X } from 'lucide-react';
 import { useTicketStore } from '../store/ticketStore';
@@ -7,15 +7,8 @@ import Badge from '../components/ui/Badge';
 import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
 import {
-  statusLabel,
-  statusColor,
-  priorityLabel,
-  priorityColor,
-  categoryLabel,
-  formatRelative,
-  ALL_STATUSES,
-  ALL_PRIORITIES,
-  ALL_CATEGORIES,
+  statusLabel, statusColor, priorityLabel, priorityColor,
+  categoryLabel, formatRelative, ALL_STATUSES, ALL_PRIORITIES, ALL_CATEGORIES,
 } from '../utils/helpers';
 
 type SortField = 'id' | 'title' | 'status' | 'priority' | 'createdAt' | 'updatedAt';
@@ -30,7 +23,6 @@ const Tickets: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const tickets = useTicketStore((s) => s.tickets);
 
-  const [search, setSearch] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [sortField, setSortField] = useState<SortField>('createdAt');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
@@ -38,10 +30,23 @@ const Tickets: React.FC = () => {
   const statusFilter = (searchParams.get('status') as TicketStatus | null) ?? '';
   const priorityFilter = (searchParams.get('priority') as TicketPriority | null) ?? '';
   const categoryFilter = (searchParams.get('category') as TicketCategory | null) ?? '';
+  // search from URL param (set by Header search or local input)
+  const urlSearch = searchParams.get('q') ?? '';
+  const [search, setSearch] = useState(urlSearch);
+
+  // sync if URL param changes (e.g. from Header)
+  useEffect(() => { setSearch(urlSearch); }, [urlSearch]);
 
   const setFilter = (key: string, value: string) => {
     const next = new URLSearchParams(searchParams);
     if (value) next.set(key, value); else next.delete(key);
+    setSearchParams(next);
+  };
+
+  const setSearchParam = (value: string) => {
+    setSearch(value);
+    const next = new URLSearchParams(searchParams);
+    if (value) next.set('q', value); else next.delete('q');
     setSearchParams(next);
   };
 
@@ -90,6 +95,12 @@ const Tickets: React.FC = () => {
       : <ChevronDown size={11} className="text-cdv-blue" />;
   };
 
+  const getRowClass = (status: TicketStatus) => {
+    if (status === 'closed') return 'ticket-row-closed cursor-pointer border-b border-surface-border';
+    if (status === 'resolved') return 'ticket-row-resolved cursor-pointer border-b border-surface-border transition-all';
+    return 'cursor-pointer hover:bg-surface/60 transition-colors border-b border-surface-border';
+  };
+
   return (
     <div className="max-w-7xl mx-auto space-y-4 animate-fade-in">
       {/* Toolbar */}
@@ -99,10 +110,18 @@ const Tickets: React.FC = () => {
           <input
             type="text"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => setSearchParam(e.target.value)}
             placeholder="Szukaj po ID, tytule, osobie…"
             className="input-base pl-9"
           />
+          {search && (
+            <button
+              onClick={() => setSearchParam('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-faint hover:text-ink"
+            >
+              <X size={14} />
+            </button>
+          )}
         </div>
         <div className="flex gap-2 flex-shrink-0">
           <Button variant="outline" size="sm" onClick={() => setShowFilters((v) => !v)}>
@@ -156,6 +175,7 @@ const Tickets: React.FC = () => {
       {/* Count */}
       <p className="text-[13px] text-ink-faint font-medium">
         Wyświetlono <span className="font-bold text-ink">{filtered.length}</span> z {tickets.length} zgłoszeń
+        {search && <span className="ml-1">dla „<span className="text-cdv-blue font-semibold">{search}</span>"</span>}
       </p>
 
       {/* Table */}
@@ -176,8 +196,7 @@ const Tickets: React.FC = () => {
                     onClick={() => handleSort(field)}
                   >
                     <span className="flex items-center gap-1 hover:text-ink-muted transition-colors">
-                      {label}
-                      <SortIcon field={field} />
+                      {label} <SortIcon field={field} />
                     </span>
                   </th>
                 ))}
@@ -202,21 +221,21 @@ const Tickets: React.FC = () => {
                   </td>
                 </tr>
               ) : (
-                filtered.map((ticket, idx) => (
+                filtered.map((ticket) => (
                   <tr
                     key={ticket.id}
                     onClick={() => navigate(`/tickets/${ticket.id}`)}
-                    className={`cursor-pointer hover:bg-surface/60 transition-colors group ${
-                      idx < filtered.length - 1 ? 'border-b border-surface-border' : ''
-                    }`}
+                    className={getRowClass(ticket.status)}
                   >
                     <td className="px-4 py-3.5">
-                      <span className="font-mono text-[11px] font-bold text-cdv-blue group-hover:text-cdv-blue-mid">
+                      <span className={`font-mono text-[11px] font-bold ${ticket.status === 'closed' ? 'text-ink-faint' : 'text-cdv-blue'}`}>
                         {ticket.id}
                       </span>
                     </td>
                     <td className="px-4 py-3.5 max-w-xs">
-                      <p className="text-[13px] text-ink font-semibold truncate">{ticket.title}</p>
+                      <p className={`text-[13px] font-semibold truncate ${ticket.status === 'closed' ? 'line-through text-ink-faint' : 'text-ink'}`}>
+                        {ticket.title}
+                      </p>
                       <p className="text-[11px] text-ink-faint truncate">{ticket.requesterName}</p>
                     </td>
                     <td className="px-4 py-3.5">

@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { ref, onValue, set, update } from 'firebase/database';
+import { ref, onValue, set, update, remove } from 'firebase/database';
 import { db } from '../firebase';
 import { Ticket, TicketStatus, Comment, NewTicketForm, AppSettings } from '../types';
 
@@ -131,6 +131,7 @@ interface TicketState {
   updateTicketStatus: (id: string, status: TicketStatus) => Promise<void>;
   assignTicket: (id: string, assignee: string) => Promise<void>;
   addComment: (ticketId: string, author: string, authorRole: Comment['authorRole'], content: string) => Promise<void>;
+  deleteTicket: (id: string) => Promise<void>;
   updateSettings: (s: Partial<AppSettings>) => Promise<void>;
 }
 
@@ -217,6 +218,10 @@ export const useTicketStore = create<TicketState>()((setState, getState) => {
         id: cid, ticketId, author, authorRole, content, createdAt: ts,
       });
       await update(ref(db, `tickets/${ticketId}`), { updatedAt: ts });
+    },
+
+    deleteTicket: async (id: string) => {
+      await remove(ref(db, `tickets/${id}`));
     },
 
     updateSettings: async (partial: Partial<AppSettings>) => {

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, Send, User, Tag, Clock, Calendar,
-  UserCheck, AlertTriangle, CheckCircle2, MessageSquare, MapPin,
+  UserCheck, AlertTriangle, CheckCircle2, MessageSquare, MapPin, Trash2,
 } from 'lucide-react';
 import { useTicketStore } from '../store/ticketStore';
 import { TicketStatus } from '../types';
@@ -21,6 +21,8 @@ const TicketDetail: React.FC = () => {
   const updateTicketStatus = useTicketStore((s) => s.updateTicketStatus);
   const assignTicket = useTicketStore((s) => s.assignTicket);
   const addComment = useTicketStore((s) => s.addComment);
+  const deleteTicket = useTicketStore((s) => s.deleteTicket);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   const ticket = tickets.find((t) => t.id === id);
 
@@ -46,6 +48,10 @@ const TicketDetail: React.FC = () => {
 
   const handleStatusChange = (status: TicketStatus) => updateTicketStatus(ticket.id, status);
   const handleAssign = (assignee: string) => assignTicket(ticket.id, assignee);
+  const handleDelete = async () => {
+    await deleteTicket(ticket.id);
+    navigate('/tickets');
+  };
   const handleAddComment = (e: React.FormEvent) => {
     e.preventDefault();
     if (!comment.trim()) return;
@@ -79,12 +85,40 @@ const TicketDetail: React.FC = () => {
             <h1 className="text-xl font-bold text-ink mt-1">{ticket.title}</h1>
           </div>
         </div>
-        {isResolved && (
-          <div className="flex items-center gap-1.5 text-emerald-600 text-[13px] font-semibold flex-shrink-0 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-200">
-            <CheckCircle2 size={15} />
-            Zamknięte
-          </div>
-        )}
+        <div className="flex items-center gap-2 flex-shrink-0">
+          {isResolved && (
+            <div className="flex items-center gap-1.5 text-emerald-600 text-[13px] font-semibold bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-200">
+              <CheckCircle2 size={15} />
+              Zamknięte
+            </div>
+          )}
+          {/* Delete */}
+          {!confirmDelete ? (
+            <button
+              onClick={() => setConfirmDelete(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[13px] font-semibold text-red-500 border border-red-200 hover:bg-red-50 transition-all duration-200"
+            >
+              <Trash2 size={14} />
+              Usuń
+            </button>
+          ) : (
+            <div className="flex items-center gap-2 bg-red-50 border border-red-200 rounded-xl px-3 py-1.5 animate-scale-in">
+              <span className="text-[12px] text-red-600 font-semibold">Na pewno?</span>
+              <button
+                onClick={handleDelete}
+                className="text-[12px] font-bold text-white bg-red-500 hover:bg-red-600 px-2 py-0.5 rounded-lg transition-colors"
+              >
+                Tak, usuń
+              </button>
+              <button
+                onClick={() => setConfirmDelete(false)}
+                className="text-[12px] text-ink-muted hover:text-ink font-medium"
+              >
+                Anuluj
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
