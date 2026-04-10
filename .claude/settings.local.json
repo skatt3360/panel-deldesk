@@ -38,7 +38,8 @@
       "WebSearch",
       "WebFetch(domain:fontsinuse.com)",
       "WebFetch(domain:www.uniforma.pl)",
-      "WebFetch(domain:brandfetch.com)"
+      "WebFetch(domain:brandfetch.com)",
+      "Bash(git remote:*)"
     ]
   }
 }
