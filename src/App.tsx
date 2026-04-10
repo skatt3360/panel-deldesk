@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore } from './store/authStore';
+import { useGmailStore } from './store/gmailStore';
 import Layout from './components/Layout';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
@@ -11,6 +12,37 @@ import CalendarPage from './pages/Calendar';
 import Events from './pages/Events';
 import Chat from './pages/Chat';
 import Settings from './pages/Settings';
+
+const AuthenticatedApp: React.FC = () => {
+  const googleAccessToken = useAuthStore((s) => s.googleAccessToken);
+  const user = useAuthStore((s) => s.user);
+  const { startPolling, stopPolling } = useGmailStore();
+
+  useEffect(() => {
+    if (googleAccessToken && user) {
+      startPolling(googleAccessToken, user.uid);
+      return () => stopPolling();
+    }
+  }, [googleAccessToken, user, startPolling, stopPolling]);
+
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route element={<Layout />}>
+          <Route index element={<Dashboard />} />
+          <Route path="tickets" element={<Tickets />} />
+          <Route path="tickets/new" element={<NewTicket />} />
+          <Route path="tickets/:id" element={<TicketDetail />} />
+          <Route path="events" element={<Events />} />
+          <Route path="calendar" element={<CalendarPage />} />
+          <Route path="chat" element={<Chat />} />
+          <Route path="settings" element={<Settings />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
+  );
+};
 
 const App: React.FC = () => {
   const { user, initialized } = useAuthStore();
@@ -36,23 +68,7 @@ const App: React.FC = () => {
     );
   }
 
-  return (
-    <BrowserRouter>
-      <Routes>
-        <Route element={<Layout />}>
-          <Route index element={<Dashboard />} />
-          <Route path="tickets" element={<Tickets />} />
-          <Route path="tickets/new" element={<NewTicket />} />
-          <Route path="tickets/:id" element={<TicketDetail />} />
-          <Route path="events" element={<Events />} />
-          <Route path="calendar" element={<CalendarPage />} />
-          <Route path="chat" element={<Chat />} />
-          <Route path="settings" element={<Settings />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
-  );
+  return <AuthenticatedApp />;
 };
 
 export default App;

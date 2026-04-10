@@ -5,6 +5,7 @@ import { useTicketStore } from '../store/ticketStore';
 import { statusLabel, statusColor, priorityColor, priorityLabel, formatRelative } from '../utils/helpers';
 import Badge from './ui/Badge';
 import Changelog from './Changelog';
+import GmailStatus from './GmailStatus';
 
 interface HeaderProps {
   onMenuClick: () => void;
@@ -331,6 +332,9 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
             </div>
           )}
         </div>
+
+        {/* Gmail Status */}
+        <GmailStatus />
 
         {/* Changelog */}
         <Changelog />

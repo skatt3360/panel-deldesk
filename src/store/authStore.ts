@@ -5,15 +5,18 @@ import {
   signOut,
   onAuthStateChanged,
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   GoogleAuthProvider,
   User,
 } from 'firebase/auth';
 import { auth } from '../firebase';
 import { getUserRole, UserRole } from '../utils/roles';
 
-interface AuthState {
+export interface AuthState {
   user: User | null;
   role: UserRole;
+  googleAccessToken: string | null;
   loading: boolean;
   error: string | null;
   initialized: boolean;
@@ -22,9 +25,19 @@ interface AuthState {
   register:    (email: string, password: string) => Promise<void>;
   logout:      () => Promise<void>;
   clearError:  () => void;
+  setGoogleAccessToken: (token: string | null) => void;
 }
 
 export const useAuthStore = create<AuthState>()((setState) => {
+  // Handle redirect result on init (for popup-blocked fallback)
+  getRedirectResult(auth).then((result) => {
+    if (result) {
+      const credential = GoogleAuthProvider.credentialFromResult(result);
+      const token = credential?.accessToken ?? null;
+      if (token) setState({ googleAccessToken: token });
+    }
+  }).catch(() => { /* ignore */ });
+
   onAuthStateChanged(auth, (user) => {
     setState({ user, role: getUserRole(user?.email), loading: false, initialized: true });
   });
@@ -32,6 +45,7 @@ export const useAuthStore = create<AuthState>()((setState) => {
   return {
     user: null,
     role: 'user',
+    googleAccessToken: null,
     loading: false,
     error: null,
     initialized: false,
@@ -41,8 +55,8 @@ export const useAuthStore = create<AuthState>()((setState) => {
       try {
         await signInWithEmailAndPassword(auth, email, password);
         setState({ error: null, loading: false });
-      } catch (err: any) {
-        const code = err?.code ?? '';
+      } catch (err: unknown) {
+        const code = (err as { code?: string })?.code ?? '';
         const msg =
           code === 'auth/invalid-credential' || code === 'auth/wrong-password' || code === 'auth/user-not-found'
             ? 'Nieprawidłowy email lub hasło.'
@@ -60,8 +74,8 @@ export const useAuthStore = create<AuthState>()((setState) => {
       try {
         await createUserWithEmailAndPassword(auth, email, password);
         setState({ error: null, loading: false });
-      } catch (err: any) {
-        const code = err?.code ?? '';
+      } catch (err: unknown) {
+        const code = (err as { code?: string })?.code ?? '';
         const msg =
           code === 'auth/email-already-in-use' ? 'Ten adres email jest już zajęty.'
           : code === 'auth/weak-password'        ? 'Hasło musi mieć co najmniej 6 znaków.'
@@ -75,19 +89,39 @@ export const useAuthStore = create<AuthState>()((setState) => {
       setState({ loading: true, error: null });
       try {
         const provider = new GoogleAuthProvider();
-        await signInWithPopup(auth, provider);
-        setState({ error: null, loading: false });
-      } catch (err: any) {
-        const code = err?.code ?? '';
-        const msg = code === 'auth/popup-closed-by-user' ? 'Zamknięto okno logowania Google.'
-          : code === 'auth/cancelled-popup-request' ? 'Anulowano logowanie Google.'
-          : 'Błąd logowania przez Google. Spróbuj ponownie.';
-        setState({ error: msg, loading: false });
+        provider.addScope('https://www.googleapis.com/auth/gmail.readonly');
+        const result = await signInWithPopup(auth, provider);
+        const credential = GoogleAuthProvider.credentialFromResult(result);
+        const token = credential?.accessToken ?? null;
+        setState({ error: null, loading: false, googleAccessToken: token });
+      } catch (err: unknown) {
+        const code = (err as { code?: string })?.code ?? '';
+        if (code === 'auth/popup-blocked' || code === 'auth/cancelled-popup-request') {
+          // Fallback to redirect
+          try {
+            const provider = new GoogleAuthProvider();
+            provider.addScope('https://www.googleapis.com/auth/gmail.readonly');
+            await signInWithRedirect(auth, provider);
+            // Result handled in getRedirectResult above on next load
+          } catch {
+            setState({ error: 'Błąd logowania przez Google. Spróbuj ponownie.', loading: false });
+          }
+        } else {
+          const msg = code === 'auth/popup-closed-by-user' ? 'Zamknięto okno logowania Google.'
+            : code === 'auth/cancelled-popup-request' ? 'Anulowano logowanie Google.'
+            : 'Błąd logowania przez Google. Spróbuj ponownie.';
+          setState({ error: msg, loading: false });
+        }
       }
     },
 
-    logout: async () => { await signOut(auth); },
+    logout: async () => {
+      await signOut(auth);
+      setState({ googleAccessToken: null });
+    },
 
     clearError: () => setState({ error: null }),
+
+    setGoogleAccessToken: (token) => setState({ googleAccessToken: token }),
   };
 });
