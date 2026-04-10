@@ -10,17 +10,20 @@ import {
 } from 'firebase/auth';
 import { auth } from '../firebase';
 import { getUserRole, UserRole } from '../utils/roles';
+import { requestGmailToken } from '../utils/gmailToken';
 
 export interface AuthState {
   user:                 User | null;
   role:                 UserRole;
-  googleAccessToken:    string | null;
+  googleAccessToken:    string | null;   // Gmail API token (from GIS, NOT Firebase)
   loading:              boolean;
   googleLoading:        boolean;
+  gmailLoading:         boolean;         // specifically for GIS token request
   error:                string | null;
   initialized:          boolean;
   login:                (email: string, password: string) => Promise<void>;
-  loginGoogle:          (forceConsent?: boolean) => Promise<void>;
+  loginGoogle:          () => Promise<void>;
+  requestGmailAccess:   (forceConsent?: boolean) => void;
   register:             (email: string, password: string) => Promise<void>;
   logout:               () => Promise<void>;
   clearError:           () => void;
@@ -38,29 +41,13 @@ export const useAuthStore = create<AuthState>()((setState) => {
     });
   });
 
-  const doGooglePopup = async (forceConsent: boolean) => {
-    const provider = new GoogleAuthProvider();
-    // Request Gmail read access
-    provider.addScope('https://www.googleapis.com/auth/gmail.readonly');
-    provider.setCustomParameters({
-      prompt: forceConsent ? 'consent' : 'select_account',
-      // include_granted_scopes ensures previously granted scopes are still included
-      include_granted_scopes: 'true',
-    });
-
-    const result = await signInWithPopup(auth, provider);
-    const credential = GoogleAuthProvider.credentialFromResult(result);
-    const token = credential?.accessToken ?? null;
-    setState({ googleAccessToken: token, googleLoading: false, error: null });
-    return token;
-  };
-
   return {
     user:              null,
     role:              'user',
     googleAccessToken: null,
     loading:           false,
     googleLoading:     false,
+    gmailLoading:      false,
     error:             null,
     initialized:       false,
 
@@ -81,6 +68,49 @@ export const useAuthStore = create<AuthState>()((setState) => {
       }
     },
 
+    // Step 1: Sign in with Google via Firebase (identity only, NO Gmail scope)
+    loginGoogle: async () => {
+      setState({ googleLoading: true, error: null });
+      const provider = new GoogleAuthProvider();
+      // NO gmail scope here — Firebase caches tokens and breaks scope re-requests
+      // Gmail token is requested separately via GIS (requestGmailAccess)
+      provider.setCustomParameters({ prompt: 'select_account' });
+      try {
+        await signInWithPopup(auth, provider);
+        // onAuthStateChanged will fire and set user/role
+        setState({ googleLoading: false, error: null });
+      } catch (err: unknown) {
+        const code = (err as { code?: string })?.code ?? '';
+        if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') {
+          setState({ googleLoading: false });
+          return;
+        }
+        const msg =
+          code === 'auth/popup-blocked'
+            ? 'Popup zablokowany. Zezwól na popupy dla tej strony.'
+            : code === 'auth/unauthorized-domain'
+            ? 'Domena nie jest autoryzowana w Firebase Console.'
+            : `Błąd Google (${code || 'nieznany'}).`;
+        setState({ error: msg, googleLoading: false });
+      }
+    },
+
+    // Step 2: Request Gmail access token via Google Identity Services
+    // This is completely independent of Firebase — always gets a fresh token
+    requestGmailAccess: (forceConsent = false) => {
+      setState({ gmailLoading: true, error: null });
+      requestGmailToken((token, error) => {
+        if (token) {
+          setState({ googleAccessToken: token, gmailLoading: false });
+        } else if (error) {
+          setState({ error, gmailLoading: false });
+        } else {
+          // user cancelled — no error
+          setState({ gmailLoading: false });
+        }
+      }, forceConsent);
+    },
+
     register: async (email, password) => {
       setState({ loading: true, error: null });
       try {
@@ -93,26 +123,6 @@ export const useAuthStore = create<AuthState>()((setState) => {
           : code === 'auth/weak-password'        ? 'Hasło musi mieć co najmniej 6 znaków.'
           : `Błąd rejestracji (${code}).`;
         setState({ error: msg, loading: false });
-      }
-    },
-
-    loginGoogle: async (forceConsent = false) => {
-      setState({ googleLoading: true, error: null });
-      try {
-        await doGooglePopup(forceConsent);
-      } catch (err: unknown) {
-        const code = (err as { code?: string })?.code ?? '';
-        if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') {
-          setState({ googleLoading: false });
-          return;
-        }
-        const msg =
-          code === 'auth/popup-blocked'
-            ? 'Popup zablokowany. Zezwól na popupy dla tej strony i spróbuj ponownie.'
-            : code === 'auth/unauthorized-domain'
-            ? 'Domena nie jest autoryzowana — dodaj ją w Firebase Console → Authentication → Authorized domains.'
-            : `Błąd Google (${code || 'nieznany'}).`;
-        setState({ error: msg, googleLoading: false });
       }
     },
 
