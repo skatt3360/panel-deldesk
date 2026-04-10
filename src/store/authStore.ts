@@ -20,7 +20,7 @@ export interface AuthState {
   error:                string | null;
   initialized:          boolean;
   login:                (email: string, password: string) => Promise<void>;
-  loginGoogle:          () => Promise<void>;
+  loginGoogle:          (forceConsent?: boolean) => Promise<void>;
   register:             (email: string, password: string) => Promise<void>;
   logout:               () => Promise<void>;
   clearError:           () => void;
@@ -29,7 +29,6 @@ export interface AuthState {
 
 export const useAuthStore = create<AuthState>()((setState) => {
 
-  // Auth state listener — always active
   onAuthStateChanged(auth, (user) => {
     setState({
       user,
@@ -38,6 +37,23 @@ export const useAuthStore = create<AuthState>()((setState) => {
       initialized: true,
     });
   });
+
+  const doGooglePopup = async (forceConsent: boolean) => {
+    const provider = new GoogleAuthProvider();
+    // Request Gmail read access
+    provider.addScope('https://www.googleapis.com/auth/gmail.readonly');
+    provider.setCustomParameters({
+      prompt: forceConsent ? 'consent' : 'select_account',
+      // include_granted_scopes ensures previously granted scopes are still included
+      include_granted_scopes: 'true',
+    });
+
+    const result = await signInWithPopup(auth, provider);
+    const credential = GoogleAuthProvider.credentialFromResult(result);
+    const token = credential?.accessToken ?? null;
+    setState({ googleAccessToken: token, googleLoading: false, error: null });
+    return token;
+  };
 
   return {
     user:              null,
@@ -80,30 +96,21 @@ export const useAuthStore = create<AuthState>()((setState) => {
       }
     },
 
-    loginGoogle: async () => {
+    loginGoogle: async (forceConsent = false) => {
       setState({ googleLoading: true, error: null });
-      const provider = new GoogleAuthProvider();
-      provider.addScope('https://www.googleapis.com/auth/gmail.readonly');
-      provider.setCustomParameters({ prompt: 'select_account' });
-
       try {
-        const result = await signInWithPopup(auth, provider);
-        const credential = GoogleAuthProvider.credentialFromResult(result);
-        const token = credential?.accessToken ?? null;
-        // onAuthStateChanged will fire automatically and set user/role
-        setState({ googleAccessToken: token, googleLoading: false, error: null });
+        await doGooglePopup(forceConsent);
       } catch (err: unknown) {
         const code = (err as { code?: string })?.code ?? '';
-        // User just closed the popup — not an error
         if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') {
           setState({ googleLoading: false });
           return;
         }
         const msg =
           code === 'auth/popup-blocked'
-            ? 'Popup zablokowany przez przeglądarkę. Zezwól na popupy dla tej strony i spróbuj ponownie.'
+            ? 'Popup zablokowany. Zezwól na popupy dla tej strony i spróbuj ponownie.'
             : code === 'auth/unauthorized-domain'
-            ? 'Domena nie jest autoryzowana w Firebase. Dodaj ją w Firebase Console → Authentication → Authorized domains.'
+            ? 'Domena nie jest autoryzowana — dodaj ją w Firebase Console → Authentication → Authorized domains.'
             : `Błąd Google (${code || 'nieznany'}).`;
         setState({ error: msg, googleLoading: false });
       }

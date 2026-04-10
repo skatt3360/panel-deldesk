@@ -340,7 +340,7 @@ const Login: React.FC = () => {
               {/* Google */}
               <button
                 type="button"
-                onClick={loginGoogle}
+                onClick={() => loginGoogle(false)}
                 disabled={loading || googleLoading}
                 style={{
                   width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
