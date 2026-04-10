@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore } from './store/authStore';
 import { useGmailStore } from './store/gmailStore';
@@ -15,15 +15,24 @@ import Settings from './pages/Settings';
 
 const AuthenticatedApp: React.FC = () => {
   const googleAccessToken = useAuthStore((s) => s.googleAccessToken);
-  const user = useAuthStore((s) => s.user);
-  const { startPolling, stopPolling } = useGmailStore();
+  const user              = useAuthStore((s) => s.user);
+  const { startPolling, stopPolling, checkRecent } = useGmailStore();
+  const didInitialScan    = useRef(false);
 
   useEffect(() => {
-    if (googleAccessToken && user) {
-      startPolling(googleAccessToken, user.uid);
-      return () => stopPolling();
+    if (!googleAccessToken || !user) return;
+
+    // Start background polling (every 5 min)
+    startPolling(googleAccessToken, user.uid);
+
+    // Run an immediate scan of last 24h on first login
+    if (!didInitialScan.current) {
+      didInitialScan.current = true;
+      checkRecent(googleAccessToken, user.uid);
     }
-  }, [googleAccessToken, user, startPolling, stopPolling]);
+
+    return () => stopPolling();
+  }, [googleAccessToken, user?.uid]); // eslint-disable-line
 
   return (
     <BrowserRouter>
@@ -49,11 +58,19 @@ const App: React.FC = () => {
 
   if (!initialized) {
     return (
-      <div className="flex h-screen items-center justify-center bg-[#001233]">
-        <div className="text-center">
-          <div className="inline-block w-10 h-10 border-4 border-cdv-gold/40 border-t-cdv-gold rounded-full animate-spin mb-4" />
-          <p className="text-white/40 font-medium">Ładowanie...</p>
-        </div>
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        height: '100vh', background: '#090610',
+        flexDirection: 'column', gap: 16,
+      }}>
+        <div style={{
+          width: 36, height: 36,
+          border: '3px solid rgba(139,67,214,0.2)',
+          borderTopColor: '#8B43D6',
+          borderRadius: '50%',
+          animation: 'spin 0.8s linear infinite',
+        }} />
+        <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: 13, fontWeight: 500 }}>Ładowanie…</p>
       </div>
     );
   }
