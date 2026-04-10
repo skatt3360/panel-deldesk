@@ -4,7 +4,6 @@ import {
   createUserWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
-  signInWithPopup,
   signInWithRedirect,
   getRedirectResult,
   GoogleAuthProvider,
@@ -90,28 +89,15 @@ export const useAuthStore = create<AuthState>()((setState) => {
       try {
         const provider = new GoogleAuthProvider();
         provider.addScope('https://www.googleapis.com/auth/gmail.readonly');
-        const result = await signInWithPopup(auth, provider);
-        const credential = GoogleAuthProvider.credentialFromResult(result);
-        const token = credential?.accessToken ?? null;
-        setState({ error: null, loading: false, googleAccessToken: token });
+        // Always use redirect — works reliably across all browsers & Netlify
+        await signInWithRedirect(auth, provider);
+        // Page will reload; getRedirectResult() on next load captures the token
       } catch (err: unknown) {
         const code = (err as { code?: string })?.code ?? '';
-        if (code === 'auth/popup-blocked' || code === 'auth/cancelled-popup-request') {
-          // Fallback to redirect
-          try {
-            const provider = new GoogleAuthProvider();
-            provider.addScope('https://www.googleapis.com/auth/gmail.readonly');
-            await signInWithRedirect(auth, provider);
-            // Result handled in getRedirectResult above on next load
-          } catch {
-            setState({ error: 'Błąd logowania przez Google. Spróbuj ponownie.', loading: false });
-          }
-        } else {
-          const msg = code === 'auth/popup-closed-by-user' ? 'Zamknięto okno logowania Google.'
-            : code === 'auth/cancelled-popup-request' ? 'Anulowano logowanie Google.'
-            : 'Błąd logowania przez Google. Spróbuj ponownie.';
-          setState({ error: msg, loading: false });
-        }
+        const msg = code === 'auth/unauthorized-domain'
+          ? 'Ta domena nie jest autoryzowana w Firebase. Dodaj ją w Firebase Console → Authentication → Authorized domains.'
+          : 'Błąd logowania przez Google. Spróbuj ponownie.';
+        setState({ error: msg, loading: false });
       }
     },
 
