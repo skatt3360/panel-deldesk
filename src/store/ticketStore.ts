@@ -1,7 +1,8 @@
 import { create } from 'zustand';
 import { ref, onValue, set, update, remove } from 'firebase/database';
 import { db } from '../firebase';
-import { Ticket, TicketStatus, Comment, NewTicketForm, AppSettings } from '../types';
+import { Ticket, TicketStatus, Comment, NewTicketForm, AppSettings, ChecklistItem } from '../types';
+import { detectSupportTier } from '../utils/autoCategory';
 
 // ---------------------------------------------------------------------------
 // Sample data helpers
@@ -108,7 +109,12 @@ function parseTicket(raw: any): Ticket {
         (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
       )
     : [];
-  return { ...raw, comments };
+  const checklist = raw.checklistItems
+    ? (Object.values(raw.checklistItems) as import('../types').ChecklistItem[]).sort(
+        (a, b) => a.createdAt.localeCompare(b.createdAt)
+      )
+    : [];
+  return { ...raw, comments, checklist };
 }
 
 function nextId(tickets: Ticket[]): string {
@@ -127,12 +133,16 @@ interface TicketState {
   tickets: Ticket[];
   settings: AppSettings;
   initialized: boolean;
-  addTicket: (form: NewTicketForm) => Promise<string>;
+  addTicket: (form: NewTicketForm, linkedCalendarEventId?: string) => Promise<string>;
+  linkCalendarEvent: (ticketId: string, calendarEventId: string) => Promise<void>;
   updateTicketStatus: (id: string, status: TicketStatus) => Promise<void>;
   assignTicket: (id: string, assignee: string) => Promise<void>;
   addComment: (ticketId: string, author: string, authorRole: Comment['authorRole'], content: string) => Promise<void>;
   deleteTicket: (id: string) => Promise<void>;
   updateSettings: (s: Partial<AppSettings>) => Promise<void>;
+  addChecklistItem: (ticketId: string, text: string) => Promise<void>;
+  toggleChecklistItem: (ticketId: string, itemId: string, done: boolean) => Promise<void>;
+  deleteChecklistItem: (ticketId: string, itemId: string) => Promise<void>;
 }
 
 export const useTicketStore = create<TicketState>()((setState, getState) => {
@@ -165,7 +175,7 @@ export const useTicketStore = create<TicketState>()((setState, getState) => {
     settings: DEFAULT_SETTINGS,
     initialized: false,
 
-    addTicket: async (form: NewTicketForm) => {
+    addTicket: async (form: NewTicketForm, linkedCalendarEventId?: string) => {
       const { tickets, settings } = getState();
       const id = nextId(tickets);
       const ts = new Date().toISOString();
@@ -178,17 +188,24 @@ export const useTicketStore = create<TicketState>()((setState, getState) => {
       const dueDate = new Date(Date.now() + (slaMap[form.priority] ?? 24) * 3600000).toISOString();
       const commentId = `${id}-c1`;
 
+      const tier = detectSupportTier(form.title, form.description);
       await set(ref(db, `tickets/${id}`), {
         id, title: form.title, description: form.description,
         status: 'open', priority: form.priority, category: form.category,
         requesterName: form.requesterName, requesterEmail: form.requesterEmail,
         room: form.room ?? '',
         createdAt: ts, updatedAt: ts, dueDate, slaBreached: false,
+        supportTier: tier,
+        ...(linkedCalendarEventId ? { linkedCalendarEventId } : {}),
         comments: {
           [commentId]: { id: commentId, ticketId: id, author: 'System', authorRole: 'system', content: 'Zgłoszenie zostało utworzone.', createdAt: ts },
         },
       });
       return id;
+    },
+
+    linkCalendarEvent: async (ticketId: string, calendarEventId: string) => {
+      await update(ref(db, `tickets/${ticketId}`), { linkedCalendarEventId: calendarEventId });
     },
 
     updateTicketStatus: async (id: string, status: TicketStatus) => {
@@ -227,6 +244,20 @@ export const useTicketStore = create<TicketState>()((setState, getState) => {
     updateSettings: async (partial: Partial<AppSettings>) => {
       const merged = { ...getState().settings, ...partial };
       await set(ref(db, 'settings'), merged);
+    },
+
+    addChecklistItem: async (ticketId: string, text: string) => {
+      const id = `cl-${ticketId}-${Date.now()}`;
+      const item: ChecklistItem = { id, text, done: false, createdAt: new Date().toISOString() };
+      await set(ref(db, `tickets/${ticketId}/checklistItems/${id}`), item);
+    },
+
+    toggleChecklistItem: async (ticketId: string, itemId: string, done: boolean) => {
+      await update(ref(db, `tickets/${ticketId}/checklistItems/${itemId}`), { done });
+    },
+
+    deleteChecklistItem: async (ticketId: string, itemId: string) => {
+      await remove(ref(db, `tickets/${ticketId}/checklistItems/${itemId}`));
     },
   };
 });

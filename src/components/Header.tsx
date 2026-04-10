@@ -1,36 +1,56 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Menu, Bell, PlusCircle, Search, X, AlertTriangle, Ticket as TicketIcon, Zap } from 'lucide-react';
+import { Menu, Bell, BellOff, PlusCircle, Search, X, AlertTriangle, Ticket as TicketIcon, CheckCheck } from 'lucide-react';
 import { useTicketStore } from '../store/ticketStore';
 import { statusLabel, statusColor, priorityColor, priorityLabel, formatRelative } from '../utils/helpers';
 import Badge from './ui/Badge';
+import Changelog from './Changelog';
 
 interface HeaderProps {
   onMenuClick: () => void;
 }
 
 const pageTitles: Record<string, string> = {
-  '/': 'Dashboard',
-  '/tickets': 'Zgłoszenia',
-  '/tickets/new': 'Nowe zgłoszenie',
-  '/calendar': 'Kalendarz',
-  '/settings': 'Ustawienia',
+  '/':             'Dashboard',
+  '/tickets':      'Zgłoszenia',
+  '/tickets/new':  'Nowe zgłoszenie',
+  '/calendar':     'Kalendarz',
+  '/settings':     'Ustawienia',
 };
 
+// ---------- notification persistence ----------
+const STORAGE_KEY = 'cdv-read-notif-ids';
+
+function loadReadIds(): Set<string> {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    return stored ? new Set(JSON.parse(stored)) : new Set();
+  } catch { return new Set(); }
+}
+
+function saveReadIds(ids: Set<string>) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify([...ids])); } catch { /* noop */ }
+}
+// ----------------------------------------------
+
 const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const tickets = useTicketStore((s) => s.tickets);
-  const [notifOpen, setNotifOpen] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
+  const location  = useLocation();
+  const navigate  = useNavigate();
+  const tickets   = useTicketStore((s) => s.tickets);
+
+  const [notifOpen,   setNotifOpen]   = useState(false);
+  const [searchOpen,  setSearchOpen]  = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const bellRef = useRef<HTMLDivElement>(null);
+  const [readIds,     setReadIds]     = useState<Set<string>>(loadReadIds);
+
+  const bellRef   = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
+  // Close dropdowns on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (bellRef.current && !bellRef.current.contains(e.target as Node)) setNotifOpen(false);
+      if (bellRef.current   && !bellRef.current.contains(e.target as Node))   setNotifOpen(false);
       if (searchRef.current && !searchRef.current.contains(e.target as Node)) setSearchOpen(false);
     };
     document.addEventListener('mousedown', handler);
@@ -65,10 +85,6 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
     }
   };
 
-  const handleSearchKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') handleSearchSubmit(e as any);
-  };
-
   // Live search results
   const searchResults = searchQuery.trim().length > 1
     ? tickets.filter((t) => {
@@ -81,15 +97,33 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
       }).slice(0, 6)
     : [];
 
-  const openTickets = tickets.filter((t) => t.status === 'open' || t.status === 'in-progress');
+  // Notification source: open + in-progress tickets
+  const openTickets    = tickets.filter((t) => t.status === 'open' || t.status === 'in-progress');
   const criticalTickets = tickets.filter(
     (t) => t.priority === 'critical' && (t.status === 'open' || t.status === 'in-progress')
   );
-  const notifCount = criticalTickets.length > 0 ? criticalTickets.length : openTickets.length;
   const notifTickets = [
     ...criticalTickets,
     ...openTickets.filter((t) => t.priority !== 'critical'),
-  ].slice(0, 8);
+  ].slice(0, 10);
+
+  const unreadCount = notifTickets.filter((t) => !readIds.has(t.id)).length;
+
+  const markAllRead = () => {
+    const next = new Set([...readIds, ...notifTickets.map((t) => t.id)]);
+    setReadIds(next);
+    saveReadIds(next);
+  };
+
+  const markOneRead = (id: string) => {
+    const next = new Set([...readIds, id]);
+    setReadIds(next);
+    saveReadIds(next);
+  };
+
+  const openNotifPanel = () => {
+    setNotifOpen((o) => !o);
+  };
 
   const pathKey =
     Object.keys(pageTitles).find((key) => {
@@ -133,20 +167,19 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
           </button>
 
           {searchOpen && (
-            <div className="absolute right-0 top-full mt-2 w-[380px] bg-white rounded-2xl shadow-dropdown border border-surface-border z-50 animate-scale-in overflow-hidden">
-              <form onSubmit={handleSearchSubmit} className="flex items-center gap-2 px-3 py-2.5 border-b border-surface-border">
-                <Search size={15} className="text-ink-faint flex-shrink-0" />
+            <div className="absolute right-0 top-full mt-2 w-[380px] bg-[#0a1628] border border-white/15 rounded-2xl shadow-2xl z-50 animate-scale-in overflow-hidden">
+              <form onSubmit={handleSearchSubmit} className="flex items-center gap-2 px-3 py-2.5 border-b border-white/10">
+                <Search size={15} className="text-white/30 flex-shrink-0" />
                 <input
                   ref={searchInputRef}
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyDown={handleSearchKeyDown}
                   placeholder="Szukaj po ID, tytule, nazwisku..."
-                  className="flex-1 text-[13px] text-ink bg-transparent focus:outline-none placeholder:text-ink-faint"
+                  className="flex-1 text-[13px] text-white bg-transparent focus:outline-none placeholder:text-white/30"
                 />
                 {searchQuery && (
-                  <button type="button" onClick={() => setSearchQuery('')} className="text-ink-faint hover:text-ink">
+                  <button type="button" onClick={() => setSearchQuery('')} className="text-white/30 hover:text-white/60">
                     <X size={14} />
                   </button>
                 )}
@@ -155,32 +188,32 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
               {searchResults.length > 0 ? (
                 <ul>
                   {searchResults.map((t) => (
-                    <li key={t.id} className="border-b border-surface-border last:border-0">
+                    <li key={t.id} className="border-b border-white/[0.06] last:border-0">
                       <button
                         onClick={() => { navigate(`/tickets/${t.id}`); setSearchOpen(false); setSearchQuery(''); }}
-                        className="w-full text-left px-4 py-2.5 hover:bg-surface transition-colors flex items-center gap-3"
+                        className="w-full text-left px-4 py-2.5 hover:bg-white/[0.05] transition-colors flex items-center gap-3"
                       >
-                        <span className="font-mono text-[11px] font-bold text-cdv-blue w-16 flex-shrink-0">{t.id}</span>
-                        <span className="text-[13px] text-ink truncate flex-1">{t.title}</span>
+                        <span className="font-mono text-[11px] font-bold text-cdv-gold w-16 flex-shrink-0">{t.id}</span>
+                        <span className="text-[13px] text-white/80 truncate flex-1">{t.title}</span>
                         <Badge dot className={statusColor[t.status]}>{statusLabel[t.status]}</Badge>
                       </button>
                     </li>
                   ))}
-                  <li className="px-4 py-2 bg-surface/50">
+                  <li className="px-4 py-2 bg-white/[0.03]">
                     <button
                       onClick={() => { navigate(`/tickets?q=${encodeURIComponent(searchQuery)}`); setSearchOpen(false); setSearchQuery(''); }}
-                      className="text-[12px] text-cdv-blue font-semibold hover:underline"
+                      className="text-[12px] text-cdv-gold font-semibold hover:underline"
                     >
                       Pokaż wszystkie wyniki dla „{searchQuery}" →
                     </button>
                   </li>
                 </ul>
               ) : searchQuery.length > 1 ? (
-                <div className="px-4 py-6 text-center text-[13px] text-ink-faint">
+                <div className="px-4 py-6 text-center text-[13px] text-white/30">
                   Brak wyników dla „{searchQuery}"
                 </div>
               ) : (
-                <div className="px-4 py-4 text-[12px] text-ink-faint">
+                <div className="px-4 py-4 text-[12px] text-white/30">
                   Wpisz minimum 2 znaki aby wyszukać
                 </div>
               )}
@@ -191,7 +224,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
         {/* New ticket */}
         <button
           onClick={() => navigate('/tickets/new')}
-          className="hidden sm:flex items-center gap-1.5 px-3.5 py-1.5 text-[13px] font-semibold text-white bg-cdv-blue hover:bg-cdv-blue-dark rounded-xl transition-all duration-200 shadow-sm hover:shadow-md active:scale-[0.97]"
+          className="hidden sm:flex items-center gap-1.5 px-3.5 py-1.5 text-[13px] font-semibold text-cdv-blue bg-cdv-gold hover:brightness-110 rounded-xl transition-all duration-200 shadow-sm"
         >
           <PlusCircle size={14} />
           <span>Nowe</span>
@@ -200,73 +233,97 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
         {/* Bell */}
         <div className="relative" ref={bellRef}>
           <button
-            onClick={() => setNotifOpen((o) => !o)}
+            onClick={openNotifPanel}
             className="p-2 rounded-xl text-white/50 hover:text-white hover:bg-white/10 transition-all duration-200 relative"
           >
-            <Bell size={18} />
-            {notifCount > 0 && (
+            {unreadCount > 0
+              ? <Bell size={18} className="text-cdv-gold" />
+              : <BellOff size={18} />
+            }
+            {unreadCount > 0 && (
               <span className="absolute top-0.5 right-0.5 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center shadow-sm">
-                {notifCount > 9 ? '9+' : notifCount}
+                {unreadCount > 9 ? '9+' : unreadCount}
               </span>
             )}
           </button>
 
           {notifOpen && (
-            <div className="absolute right-0 top-full mt-2 w-[340px] bg-white rounded-2xl shadow-dropdown border border-surface-border z-50 animate-scale-in overflow-hidden">
-              <div className="flex items-center justify-between px-4 py-3.5 border-b border-surface-border">
+            <div className="absolute right-0 top-full mt-2 w-[360px] bg-[#0a1628] border border-white/15 rounded-2xl shadow-2xl z-50 animate-scale-in overflow-hidden">
+              {/* Header */}
+              <div className="flex items-center justify-between px-4 py-3.5 border-b border-white/10">
                 <div className="flex items-center gap-2">
-                  <Zap size={14} className="text-cdv-gold fill-cdv-gold" />
-                  <h3 className="text-sm font-bold text-ink">Powiadomienia</h3>
-                  {notifCount > 0 && (
-                    <span className="px-1.5 py-0.5 bg-cdv-blue text-white text-[10px] font-bold rounded-full">{notifCount}</span>
+                  <Bell size={14} className={unreadCount > 0 ? 'text-cdv-gold' : 'text-white/30'} />
+                  <h3 className="text-sm font-bold text-white">Powiadomienia</h3>
+                  {unreadCount > 0 && (
+                    <span className="px-1.5 py-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full">{unreadCount}</span>
                   )}
                 </div>
-                <button onClick={() => setNotifOpen(false)} className="text-ink-faint hover:text-ink transition-colors">
-                  <X size={15} />
-                </button>
+                <div className="flex items-center gap-2">
+                  {unreadCount > 0 && (
+                    <button
+                      onClick={markAllRead}
+                      className="flex items-center gap-1 text-[11px] text-white/50 hover:text-cdv-gold transition-colors"
+                      title="Oznacz wszystkie jako przeczytane"
+                    >
+                      <CheckCheck size={13} />
+                      <span className="hidden sm:inline">Oznacz wszystkie</span>
+                    </button>
+                  )}
+                  <button onClick={() => setNotifOpen(false)} className="text-white/30 hover:text-white/60 transition-colors">
+                    <X size={15} />
+                  </button>
+                </div>
               </div>
 
               {notifTickets.length === 0 ? (
-                <div className="px-4 py-10 text-center text-ink-faint text-sm">
-                  <Bell size={28} className="mx-auto mb-2 opacity-20" />
+                <div className="px-4 py-10 text-center text-white/25 text-sm">
+                  <BellOff size={28} className="mx-auto mb-2 opacity-20" />
                   Brak aktywnych zgłoszeń
                 </div>
               ) : (
                 <ul className="max-h-72 overflow-y-auto">
-                  {notifTickets.map((t) => (
-                    <li key={t.id} className="border-b border-surface-border last:border-0">
-                      <button
-                        onClick={() => { navigate(`/tickets/${t.id}`); setNotifOpen(false); }}
-                        className="w-full text-left px-4 py-3 hover:bg-surface transition-colors"
-                      >
-                        <div className="flex items-start gap-3">
-                          <div className={`mt-0.5 p-1.5 rounded-lg flex-shrink-0 ${t.priority === 'critical' ? 'bg-red-100' : 'bg-cdv-blue-light'}`}>
-                            {t.priority === 'critical'
-                              ? <AlertTriangle size={12} className="text-red-500" />
-                              : <TicketIcon size={12} className="text-cdv-blue" />}
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-1.5 mb-0.5">
-                              <span className="text-[11px] font-mono font-bold text-cdv-blue">{t.id}</span>
-                              <Badge className={priorityColor[t.priority]}>{priorityLabel[t.priority]}</Badge>
+                  {notifTickets.map((t) => {
+                    const isRead = readIds.has(t.id);
+                    return (
+                      <li key={t.id} className="border-b border-white/[0.06] last:border-0">
+                        <button
+                          onClick={() => {
+                            markOneRead(t.id);
+                            navigate(`/tickets/${t.id}`);
+                            setNotifOpen(false);
+                          }}
+                          className={`w-full text-left px-4 py-3 hover:bg-white/[0.05] transition-colors ${isRead ? 'opacity-50' : ''}`}
+                        >
+                          <div className="flex items-start gap-3">
+                            <div className={`mt-0.5 p-1.5 rounded-lg flex-shrink-0 ${t.priority === 'critical' ? 'bg-red-500/20' : 'bg-white/10'}`}>
+                              {t.priority === 'critical'
+                                ? <AlertTriangle size={12} className="text-red-400" />
+                                : <TicketIcon size={12} className="text-white/50" />}
                             </div>
-                            <p className="text-[13px] text-ink font-medium truncate">{t.title}</p>
-                            <div className="flex items-center gap-2 mt-1">
-                              <Badge dot className={statusColor[t.status]}>{statusLabel[t.status]}</Badge>
-                              <span className="text-[11px] text-ink-faint">{formatRelative(t.createdAt)}</span>
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-1.5 mb-0.5">
+                                <span className="text-[11px] font-mono font-bold text-cdv-gold">{t.id}</span>
+                                <Badge className={priorityColor[t.priority]}>{priorityLabel[t.priority]}</Badge>
+                                {!isRead && <span className="w-1.5 h-1.5 rounded-full bg-cdv-gold flex-shrink-0" />}
+                              </div>
+                              <p className="text-[13px] text-white/80 font-medium truncate">{t.title}</p>
+                              <div className="flex items-center gap-2 mt-1">
+                                <Badge dot className={statusColor[t.status]}>{statusLabel[t.status]}</Badge>
+                                <span className="text-[11px] text-white/30">{formatRelative(t.createdAt)}</span>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </button>
-                    </li>
-                  ))}
+                        </button>
+                      </li>
+                    );
+                  })}
                 </ul>
               )}
 
-              <div className="px-4 py-3 border-t border-surface-border bg-surface/50">
+              <div className="px-4 py-3 border-t border-white/10">
                 <button
                   onClick={() => { navigate('/tickets'); setNotifOpen(false); }}
-                  className="text-[12px] text-cdv-blue hover:underline font-semibold"
+                  className="text-[12px] text-cdv-gold hover:underline font-semibold"
                 >
                   Zobacz wszystkie zgłoszenia →
                 </button>
@@ -275,14 +332,17 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
           )}
         </div>
 
+        {/* Changelog */}
+        <Changelog />
+
         {/* Open count */}
-        {openTickets.length > 0 && (
+        {unreadCount > 0 && (
           <div
             className="hidden md:flex items-center gap-1.5 px-2.5 py-1 bg-white/10 text-white/70 text-[12px] font-semibold rounded-full cursor-pointer hover:bg-white/15 transition-colors"
             onClick={() => navigate('/tickets')}
           >
             <span className="w-1.5 h-1.5 rounded-full bg-cdv-gold animate-pulse-dot" />
-            {openTickets.length} otwartych
+            {unreadCount} nowych
           </div>
         )}
       </div>

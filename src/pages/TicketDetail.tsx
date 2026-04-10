@@ -3,8 +3,10 @@ import { useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, Send, User, Tag, Clock, Calendar,
   UserCheck, AlertTriangle, CheckCircle2, MessageSquare, MapPin, Trash2,
+  ListChecks, Plus, X as XIcon, CalendarCheck2, ExternalLink,
 } from 'lucide-react';
 import { useTicketStore } from '../store/ticketStore';
+import { useAuthStore } from '../store/authStore';
 import { TicketStatus } from '../types';
 import Badge from '../components/ui/Badge';
 import Button from '../components/ui/Button';
@@ -13,16 +15,24 @@ import {
   statusLabel, statusColor, priorityLabel, priorityColor,
   categoryLabel, formatDate, formatRelative, TECHNICIANS, ALL_STATUSES,
 } from '../utils/helpers';
+import { isAdmin } from '../utils/roles';
+import { TIER_SHORT, TIER_COLOR } from '../utils/autoCategory';
 
 const TicketDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user } = useAuthStore();
   const tickets = useTicketStore((s) => s.tickets);
   const updateTicketStatus = useTicketStore((s) => s.updateTicketStatus);
   const assignTicket = useTicketStore((s) => s.assignTicket);
   const addComment = useTicketStore((s) => s.addComment);
   const deleteTicket = useTicketStore((s) => s.deleteTicket);
+  const addChecklistItem = useTicketStore((s) => s.addChecklistItem);
+  const toggleChecklistItem = useTicketStore((s) => s.toggleChecklistItem);
+  const deleteChecklistItem = useTicketStore((s) => s.deleteChecklistItem);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [checklistInput, setChecklistInput] = useState('');
+  const canAdmin = isAdmin(user?.email);
 
   const ticket = tickets.find((t) => t.id === id);
 
@@ -78,9 +88,19 @@ const TicketDetail: React.FC = () => {
           </button>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="font-mono text-base font-bold text-cdv-blue">{ticket.id}</span>
+              <span className="font-mono text-base font-bold text-cdv-gold">{ticket.id}</span>
               <Badge dot className={statusColor[ticket.status]}>{statusLabel[ticket.status]}</Badge>
               <Badge className={priorityColor[ticket.priority]}>{priorityLabel[ticket.priority]}</Badge>
+              {ticket.supportTier && (
+                <span className={`inline-flex items-center px-2 py-0.5 rounded-lg text-[11px] font-bold border ${TIER_COLOR[ticket.supportTier]}`}>
+                  {TIER_SHORT[ticket.supportTier]}
+                </span>
+              )}
+              {ticket.linkedCalendarEventId && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[11px] font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-400/25">
+                  <CalendarCheck2 size={10} /> W kalendarzu
+                </span>
+              )}
             </div>
             <h1 className="text-xl font-bold text-ink mt-1">{ticket.title}</h1>
           </div>
@@ -307,6 +327,102 @@ const TicketDetail: React.FC = () => {
               )}
             </dl>
           </Card>
+          {/* Checklist — admin only */}
+          {canAdmin && (
+            <Card>
+              <div className="flex items-center gap-2 mb-3">
+                <ListChecks size={14} className="text-ink-faint" />
+                <h3 className="text-[11px] font-bold text-ink-faint uppercase tracking-[0.08em] flex-1">
+                  Checklist wewnętrzny
+                </h3>
+                {(ticket.checklist ?? []).length > 0 && (
+                  <span className="text-[10px] font-bold text-ink-faint">
+                    {(ticket.checklist ?? []).filter((i) => i.done).length}/{(ticket.checklist ?? []).length}
+                  </span>
+                )}
+              </div>
+
+              {/* Progress bar */}
+              {(ticket.checklist ?? []).length > 0 && (
+                <div className="w-full h-1 bg-surface rounded-full mb-3 overflow-hidden">
+                  <div
+                    className="h-full bg-emerald-500 rounded-full transition-all duration-500"
+                    style={{ width: `${((ticket.checklist ?? []).filter((i) => i.done).length / (ticket.checklist ?? []).length) * 100}%` }}
+                  />
+                </div>
+              )}
+
+              {/* Items */}
+              <div className="space-y-1.5 mb-3">
+                {(ticket.checklist ?? []).map((item) => (
+                  <div key={item.id} className="flex items-center gap-2 group">
+                    <button
+                      onClick={() => toggleChecklistItem(ticket.id, item.id, !item.done)}
+                      className={`w-4 h-4 rounded border flex-shrink-0 flex items-center justify-center transition-all ${
+                        item.done ? 'bg-emerald-500 border-emerald-500' : 'border-gray-300 hover:border-emerald-400'
+                      }`}
+                    >
+                      {item.done && <CheckCircle2 size={10} className="text-white" />}
+                    </button>
+                    <span className={`text-[13px] flex-1 ${item.done ? 'line-through text-ink-faint' : 'text-ink-muted'}`}>
+                      {item.text}
+                    </span>
+                    <button
+                      onClick={() => deleteChecklistItem(ticket.id, item.id)}
+                      className="opacity-0 group-hover:opacity-100 text-ink-faint hover:text-red-500 transition-all"
+                    >
+                      <XIcon size={12} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              {/* Add item */}
+              <div className="flex gap-1.5">
+                <input
+                  type="text"
+                  value={checklistInput}
+                  onChange={(e) => setChecklistInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && checklistInput.trim()) {
+                      addChecklistItem(ticket.id, checklistInput.trim());
+                      setChecklistInput('');
+                    }
+                  }}
+                  placeholder="Dodaj pozycję..."
+                  className="flex-1 text-[12px] px-2.5 py-1.5 bg-surface border border-surface-border rounded-xl text-ink placeholder:text-ink-faint focus:outline-none focus:border-cdv-blue/30 transition-all"
+                />
+                <button
+                  onClick={() => {
+                    if (checklistInput.trim()) {
+                      addChecklistItem(ticket.id, checklistInput.trim());
+                      setChecklistInput('');
+                    }
+                  }}
+                  className="p-1.5 rounded-xl bg-cdv-blue text-white hover:bg-cdv-blue-dark transition-colors"
+                >
+                  <Plus size={14} />
+                </button>
+              </div>
+            </Card>
+          )}
+
+          {/* Linked calendar event */}
+          {ticket.linkedCalendarEventId && (
+            <Card>
+              <div className="flex items-center gap-2">
+                <CalendarCheck2 size={14} className="text-emerald-500" />
+                <span className="text-[11px] font-bold text-ink-faint uppercase tracking-[0.08em]">Powiązany event</span>
+              </div>
+              <button
+                onClick={() => navigate('/calendar')}
+                className="mt-2 flex items-center gap-1.5 text-[13px] text-cdv-blue hover:underline font-semibold"
+              >
+                <ExternalLink size={12} />
+                Otwórz w kalendarzu
+              </button>
+            </Card>
+          )}
         </div>
       </div>
     </div>

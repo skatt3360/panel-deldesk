@@ -1,10 +1,12 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import {
-  LayoutDashboard, Ticket, PlusCircle, Calendar, Settings, LogOut,
+  LayoutDashboard, Ticket, PlusCircle, Settings, LogOut,
+  CalendarCheck, MessageSquare, PartyPopper,
 } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { ADMINS } from '../utils/helpers';
+import { ROLE_LABEL, ROLE_COLOR } from '../utils/roles';
 import CdvLogo from './CdvLogo';
 
 interface NavItem {
@@ -18,7 +20,9 @@ const navItems: NavItem[] = [
   { to: '/', label: 'Dashboard', icon: <LayoutDashboard size={17} />, end: true },
   { to: '/tickets', label: 'Zgłoszenia', icon: <Ticket size={17} /> },
   { to: '/tickets/new', label: 'Nowe zgłoszenie', icon: <PlusCircle size={17} /> },
-  { to: '/calendar', label: 'Kalendarz', icon: <Calendar size={17} /> },
+  { to: '/events', label: 'Eventy', icon: <PartyPopper size={17} /> },
+  { to: '/calendar', label: 'Kalendarz', icon: <CalendarCheck size={17} /> },
+  { to: '/chat', label: 'Chat', icon: <MessageSquare size={17} /> },
   { to: '/settings', label: 'Ustawienia', icon: <Settings size={17} /> },
 ];
 
@@ -28,10 +32,10 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
-  const { user, logout } = useAuthStore();
+  const navigate = useNavigate();
+  const { user, role, logout } = useAuthStore();
   const adminRecord = ADMINS.find((a) => a.email === user?.email);
   const displayName = adminRecord?.name ?? user?.email ?? 'Administrator';
-  const displayEmail = user?.email ?? '';
   const initials = displayName.split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase();
 
   return (
@@ -47,8 +51,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         lg:translate-x-0 lg:static lg:z-auto shadow-sidebar
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
-        {/* Logo CDV */}
-        <div className="flex items-center gap-3 px-5 py-4 border-b border-white/8">
+        {/* Logo CDV → Dashboard */}
+        <div
+          className="flex items-center gap-3 px-5 py-4 border-b border-white/8 cursor-pointer hover:bg-white/5 transition-colors"
+          onClick={() => { navigate('/'); onClose(); }}
+        >
           <div className="flex-shrink-0">
             <CdvLogo size={28} variant="white" />
           </div>
@@ -97,7 +104,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
             </div>
             <div className="min-w-0 flex-1">
               <div className="text-white text-[13px] font-semibold truncate leading-tight">{displayName}</div>
-              <div className="text-white/40 text-[11px] truncate">{displayEmail}</div>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md border ${ROLE_COLOR[role]}`}>
+                  {ROLE_LABEL[role]}
+                </span>
+              </div>
             </div>
           </div>
           <button
