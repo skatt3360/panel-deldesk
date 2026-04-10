@@ -110,27 +110,36 @@ async function gmailFetch(url: string, token: string): Promise<unknown> {
   const res = await fetch(url, {
     headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
   });
+
+  const body = await res.text().catch(() => '');
+  console.log(`[Gmail API] ${res.status} ${url.split('?')[0].split('/').slice(-2).join('/')}`);
+
   if (res.status === 401) {
-    const err = Object.assign(new Error('Token wygasł — kliknij "odśwież" i zaloguj się ponownie przez Google'), { code: 'auth/token-expired' });
-    throw err;
+    throw Object.assign(
+      new Error('Token wygasł. Kliknij "Połącz Gmail" ponownie.'),
+      { code: 'auth/token-expired' }
+    );
   }
   if (res.status === 403) {
-    const body = await res.text().catch(() => '');
-    // Check if it's a scope issue
-    const isScopeErr = body.includes('insufficient') || body.includes('scope') || body.includes('PERMISSION_DENIED');
-    const err = Object.assign(
+    console.error('[Gmail API] 403 body:', body.slice(0, 300));
+    const isScopeErr = body.includes('insufficient') || body.includes('scope') || body.includes('PERMISSION_DENIED') || body.includes('forbidden');
+    throw Object.assign(
       new Error(isScopeErr
-        ? 'Brak uprawnień do Gmail. Kliknij "odśwież token" i zaakceptuj dostęp do Gmail w oknie Google.'
-        : `Gmail 403: ${body.slice(0, 100)}`),
+        ? `Brak uprawnień Gmail (scope). Kliknij "Połącz Gmail", a w oknie Google koniecznie zaakceptuj dostęp do poczty. Szczegóły: ${body.slice(0, 120)}`
+        : `Gmail 403: ${body.slice(0, 150)}`),
       { code: isScopeErr ? 'auth/insufficient-scope' : 'http/403' }
     );
-    throw err;
   }
   if (!res.ok) {
-    const body = await res.text().catch(() => '');
-    throw Object.assign(new Error(`Gmail ${res.status}: ${body.slice(0, 150)}`), { code: `http/${res.status}` });
+    console.error(`[Gmail API] ${res.status} body:`, body.slice(0, 300));
+    throw Object.assign(
+      new Error(`Gmail ${res.status}: ${body.slice(0, 150)}`),
+      { code: `http/${res.status}` }
+    );
   }
-  return res.json();
+
+  try { return JSON.parse(body); }
+  catch { throw new Error('Gmail API zwrócił nieprawidłowy JSON'); }
 }
 
 async function fetchMessageIds(token: string, query: string, maxTotal: number): Promise<string[]> {

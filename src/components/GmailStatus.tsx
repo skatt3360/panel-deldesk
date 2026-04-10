@@ -39,10 +39,10 @@ const GmailStatus: React.FC = () => {
 
   const clearError = () => { clearGmailError(); clearAuthError(); };
 
-  const handleConnect = (force = false) => {
+  const handleConnect = () => {
     clearError();
     setScanDone(null);
-    requestGmailAccess(force);
+    requestGmailAccess();
   };
 
   const handleCheckNow = async () => {
@@ -139,7 +139,7 @@ const GmailStatus: React.FC = () => {
                       {errorCode && <div style={{ marginTop: 4, fontSize: 10, opacity: 0.6, fontFamily: 'monospace' }}>{errorCode}</div>}
                     </div>
                   </div>
-                  <button onClick={() => handleConnect(true)} disabled={gmailLoading}
+                  <button onClick={() => handleConnect()} disabled={gmailLoading}
                     style={btn({ marginTop: 8, background: 'rgba(239,68,68,0.2)', border: '1px solid rgba(239,68,68,0.3)', color: '#fca5a5', opacity: gmailLoading ? 0.5 : 1 })}>
                     {gmailLoading ? <><Loader2 size={11} className="animate-spin" />Otwieranie…</> : <><RefreshCw size={11} />Spróbuj ponownie</>}
                   </button>
@@ -152,7 +152,7 @@ const GmailStatus: React.FC = () => {
                   <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', marginBottom: 10, lineHeight: 1.5 }}>
                     Połącz konto Gmail aby automatycznie importować zgłoszenia z maila.
                   </p>
-                  <button onClick={() => handleConnect(false)} disabled={gmailLoading}
+                  <button onClick={() => handleConnect()} disabled={gmailLoading}
                     style={btn({ background: 'linear-gradient(135deg,#8B43D6,#6B2D8B)', color: '#fff', boxShadow: '0 4px 16px rgba(139,67,214,0.3)', opacity: gmailLoading ? 0.5 : 1 })}>
                     {gmailLoading ? <><Loader2 size={11} className="animate-spin" />Otwieranie okna…</> : <><Link size={11} />Połącz Gmail</>}
                   </button>
@@ -189,7 +189,7 @@ const GmailStatus: React.FC = () => {
                     {scanning ? <><Loader2 size={11} className="animate-spin" />Skanowanie całej skrzynki…</> : <><Database size={11} />Skanuj całą skrzynkę</>}
                   </button>
 
-                  <button onClick={() => handleConnect(true)} disabled={isBusy}
+                  <button onClick={() => handleConnect()} disabled={isBusy}
                     style={btn({ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.3)', fontSize: 11, opacity: isBusy ? 0.4 : 1 })}>
                     <RefreshCw size={10} />Odśwież token Gmail
                   </button>
