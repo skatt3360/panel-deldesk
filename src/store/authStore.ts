@@ -4,6 +4,7 @@ import {
   createUserWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
+  signInWithPopup,
   signInWithRedirect,
   getRedirectResult,
   GoogleAuthProvider,
@@ -19,27 +20,42 @@ export interface AuthState {
   loading: boolean;
   error: string | null;
   initialized: boolean;
-  login:       (email: string, password: string) => Promise<void>;
-  loginGoogle: () => Promise<void>;
-  register:    (email: string, password: string) => Promise<void>;
-  logout:      () => Promise<void>;
-  clearError:  () => void;
+  login:                (email: string, password: string) => Promise<void>;
+  loginGoogle:          () => Promise<void>;
+  register:             (email: string, password: string) => Promise<void>;
+  logout:               () => Promise<void>;
+  clearError:           () => void;
   setGoogleAccessToken: (token: string | null) => void;
 }
 
 export const useAuthStore = create<AuthState>()((setState) => {
-  // Handle redirect result on init (for popup-blocked fallback)
-  getRedirectResult(auth).then((result) => {
-    if (result) {
-      const credential = GoogleAuthProvider.credentialFromResult(result);
-      const token = credential?.accessToken ?? null;
-      if (token) setState({ googleAccessToken: token });
-    }
-  }).catch(() => { /* ignore */ });
-
-  onAuthStateChanged(auth, (user) => {
-    setState({ user, role: getUserRole(user?.email), loading: false, initialized: true });
-  });
+  // ── Process any pending redirect FIRST, then subscribe to auth state ──
+  getRedirectResult(auth)
+    .then((result) => {
+      if (result) {
+        const credential = GoogleAuthProvider.credentialFromResult(result);
+        const token = credential?.accessToken ?? null;
+        setState({ googleAccessToken: token });
+      }
+    })
+    .catch((err: unknown) => {
+      // Surface the error so we can debug if needed
+      const code = (err as { code?: string })?.code ?? '';
+      if (code && code !== 'auth/no-auth-event') {
+        setState({ error: `Google login error: ${code}` });
+      }
+    })
+    .finally(() => {
+      // Subscribe AFTER redirect result is processed so user is already set
+      onAuthStateChanged(auth, (user) => {
+        setState({
+          user,
+          role: getUserRole(user?.email),
+          loading: false,
+          initialized: true,
+        });
+      });
+    });
 
   return {
     user: null,
@@ -86,18 +102,39 @@ export const useAuthStore = create<AuthState>()((setState) => {
 
     loginGoogle: async () => {
       setState({ loading: true, error: null });
+      const provider = new GoogleAuthProvider();
+      provider.addScope('https://www.googleapis.com/auth/gmail.readonly');
+      provider.setCustomParameters({ prompt: 'select_account' });
+
       try {
-        const provider = new GoogleAuthProvider();
-        provider.addScope('https://www.googleapis.com/auth/gmail.readonly');
-        // Always use redirect — works reliably across all browsers & Netlify
-        await signInWithRedirect(auth, provider);
-        // Page will reload; getRedirectResult() on next load captures the token
+        // Try popup first (best UX)
+        const result = await signInWithPopup(auth, provider);
+        const credential = GoogleAuthProvider.credentialFromResult(result);
+        setState({ error: null, loading: false, googleAccessToken: credential?.accessToken ?? null });
       } catch (err: unknown) {
         const code = (err as { code?: string })?.code ?? '';
-        const msg = code === 'auth/unauthorized-domain'
-          ? 'Ta domena nie jest autoryzowana w Firebase. Dodaj ją w Firebase Console → Authentication → Authorized domains.'
-          : 'Błąd logowania przez Google. Spróbuj ponownie.';
-        setState({ error: msg, loading: false });
+
+        if (code === 'auth/popup-blocked' || code === 'auth/popup-closed-by-user') {
+          // Fallback: full-page redirect
+          try {
+            await signInWithRedirect(auth, provider);
+            // Page will reload; result handled by getRedirectResult() above
+          } catch {
+            setState({ error: 'Nie można otworzyć okna logowania Google.', loading: false });
+          }
+        } else if (code === 'auth/unauthorized-domain') {
+          setState({
+            error: 'Domena nie jest autoryzowana. Dodaj ją w Firebase Console → Authentication → Authorized domains.',
+            loading: false,
+          });
+        } else if (code === 'auth/cancelled-popup-request') {
+          setState({ loading: false, error: null }); // user just closed — no error
+        } else {
+          setState({
+            error: `Błąd Google (${code || 'nieznany'}). Spróbuj ponownie.`,
+            loading: false,
+          });
+        }
       }
     },
 

@@ -3,41 +3,13 @@ import { Mail, Lock, AlertCircle, Loader2, ArrowRight } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import CdvLogo from '../components/CdvLogo';
 
-/* ── Google "G" SVG ── */
 const GoogleIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
     <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
     <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
     <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
     <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
   </svg>
-);
-
-/* ── Input field ── */
-const Field: React.FC<{
-  label: string;
-  icon: React.ReactNode;
-  type: string;
-  value: string;
-  onChange: (v: string) => void;
-  placeholder: string;
-  autoComplete?: string;
-}> = ({ label, icon, type, value, onChange, placeholder, autoComplete }) => (
-  <div>
-    <label className="block text-[11px] font-bold text-white/40 mb-2 uppercase tracking-[0.12em]">{label}</label>
-    <div className="relative">
-      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/25 pointer-events-none">{icon}</span>
-      <input
-        type={type}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        required
-        autoComplete={autoComplete}
-        className="w-full pl-11 pr-4 py-3 text-[14px] text-white placeholder:text-white/20 bg-white/[0.07] border border-white/10 rounded-2xl focus:outline-none transition-all duration-200 focus:bg-white/[0.1] focus:border-cdv-purple/60"
-      />
-    </div>
-  </div>
 );
 
 const Login: React.FC = () => {
@@ -72,103 +44,143 @@ const Login: React.FC = () => {
   const displayError = localError || error;
 
   return (
-    <div className="min-h-screen mesh-bg flex overflow-hidden relative">
-
-      {/* ── Decorative background elements ── */}
+    <div
+      className="min-h-screen flex overflow-hidden"
+      style={{
+        background: '#080510',
+        backgroundImage: [
+          'radial-gradient(ellipse 80% 70% at 15% 30%, rgba(139,67,214,0.22) 0%, transparent 60%)',
+          'radial-gradient(ellipse 60% 60% at 85% 70%, rgba(107,45,139,0.18) 0%, transparent 60%)',
+          'radial-gradient(ellipse 50% 50% at 50% 0%, rgba(255,105,0,0.09) 0%, transparent 55%)',
+        ].join(', '),
+      }}
+    >
+      {/* ── Decorative rings ── */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none select-none">
-        <div className="deco-ring absolute w-[800px] h-[800px] -top-40 -left-40 opacity-35" />
-        <div className="deco-ring-inner absolute w-[500px] h-[500px] top-10 -left-20 opacity-25" />
-        <div className="absolute w-[220px] h-[220px] bottom-24 left-48 rounded-full opacity-15"
-          style={{ border: '1px solid rgba(255,105,0,0.35)', animation: 'rotate-slow 12s linear infinite' }} />
-        <div className="absolute inset-0 opacity-[0.022]"
+        <div className="deco-ring absolute w-[700px] h-[700px] -top-36 -left-36 opacity-30" />
+        <div className="deco-ring-inner absolute w-[440px] h-[440px] top-16 -left-16 opacity-20" />
+        <div className="absolute w-[200px] h-[200px] bottom-20 left-52 rounded-full opacity-15"
+          style={{ border: '1px solid rgba(255,105,0,0.3)', animation: 'rotate-slow 12s linear infinite' }} />
+        <div className="absolute inset-0 opacity-[0.02]"
           style={{
-            backgroundImage: 'linear-gradient(rgba(255,255,255,0.7) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.7) 1px, transparent 1px)',
+            backgroundImage: 'linear-gradient(rgba(255,255,255,1) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,1) 1px,transparent 1px)',
             backgroundSize: '72px 72px',
           }} />
-        <div className="absolute top-0 right-0 w-[600px] h-[350px] bg-cdv-orange/[0.06] rounded-full blur-3xl" />
-        <div className="absolute bottom-0 left-1/3 w-[700px] h-[350px] bg-cdv-purple/[0.12] rounded-full blur-3xl" />
+        <div className="absolute top-0 right-0 w-[500px] h-[300px] rounded-full blur-3xl"
+          style={{ background: 'rgba(255,105,0,0.05)' }} />
       </div>
 
-      {/* ── Left — Brand panel ── */}
-      <div className="hidden lg:flex flex-col justify-between w-[48%] max-w-[560px] relative p-14 xl:p-20">
+      {/* ── Left brand panel ── */}
+      <div className="hidden lg:flex flex-col justify-between relative z-10 p-14 xl:p-20" style={{ width: '46%', maxWidth: 540 }}>
+
+        {/* Logo */}
         <div className="animate-fade-in">
-          <CdvLogo size={34} variant="white" />
+          <CdvLogo size={32} variant="white" />
         </div>
 
-        <div className="animate-fade-up animate-delay-100 space-y-6">
-          <div>
-            <p className="text-[11px] font-bold tracking-[0.25em] text-cdv-purple-light/80 uppercase mb-5">
-              IT Helpdesk — Collegium Da Vinci
-            </p>
-            <h1 className="font-display font-black text-white leading-[1.0] mb-6"
+        {/* Headline */}
+        <div className="animate-fade-up animate-delay-100">
+          <p className="text-[10px] font-black tracking-[0.3em] uppercase mb-5"
+            style={{ color: 'rgba(196,158,232,0.7)' }}>
+            IT Helpdesk Panel
+          </p>
+
+          <div className="mb-6" style={{ fontFamily: 'Syne, sans-serif' }}>
+            <div className="font-black text-white leading-none mb-1"
+              style={{ fontSize: 'clamp(40px,4.5vw,64px)', letterSpacing: '-0.03em' }}>
+              Panel
+            </div>
+            <div className="font-black leading-none mb-1"
               style={{
-                fontFamily: 'Syne, sans-serif',
-                fontSize: 'clamp(48px, 5vw, 72px)',
-                letterSpacing: '-0.02em',
+                fontSize: 'clamp(40px,4.5vw,64px)',
+                letterSpacing: '-0.03em',
+                background: 'linear-gradient(135deg, #C49EE8 0%, #8B43D6 50%, #FF6900 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
               }}>
-              Zarządzaj<br />
-              <span className="text-transparent bg-clip-text"
-                style={{ backgroundImage: 'linear-gradient(135deg, #C49EE8 0%, #FF6900 100%)' }}>
-                infrastrukturą
-              </span><br />
+              Helpdesk
+            </div>
+            <div className="font-black text-white leading-none"
+              style={{ fontSize: 'clamp(40px,4.5vw,64px)', letterSpacing: '-0.03em' }}>
               CDV.
-            </h1>
-            <p className="text-white/40 text-[15px] leading-relaxed max-w-sm font-medium">
-              Centralny panel zgłoszeń IT, kalendarza i komunikacji dla całego zespołu uczelni.
-            </p>
+            </div>
           </div>
 
-          {/* Feature chips */}
-          <div className="flex flex-wrap gap-2 animate-fade-up animate-delay-200">
-            {['Zgłoszenia L1/L2/L3', 'Kalendarz IT', 'Chat zespołu', 'Import z Gmail'].map((f) => (
-              <span key={f} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold text-white/50 border border-white/10 bg-white/[0.04]">
-                <span className="w-1 h-1 rounded-full bg-cdv-purple-light opacity-60" />
+          <p style={{ color: 'rgba(255,255,255,0.38)', fontSize: 14, lineHeight: 1.7, maxWidth: 300 }}>
+            Centralny panel zgłoszeń IT, kalendarza i komunikacji dla Collegium Da Vinci.
+          </p>
+
+          {/* Chips */}
+          <div className="flex flex-wrap gap-2 mt-6">
+            {['Zgłoszenia L1/L2/L3', 'Kalendarz IT', 'Chat', 'Gmail sync'].map((f) => (
+              <span key={f}
+                className="flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-full"
+                style={{
+                  color: 'rgba(255,255,255,0.45)',
+                  background: 'rgba(255,255,255,0.05)',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                }}>
+                <span className="w-1 h-1 rounded-full" style={{ background: 'rgba(196,158,232,0.6)' }} />
                 {f}
               </span>
             ))}
           </div>
         </div>
 
-        <div className="animate-fade-up animate-delay-300 flex gap-10">
+        {/* Stats */}
+        <div className="flex gap-10 animate-fade-up animate-delay-300">
           {[['3', 'Administratorzy'], ['L1–L3', 'Linie wsparcia'], ['∞', 'Zgłoszeń']].map(([n, l]) => (
             <div key={l}>
-              <div className="text-2xl font-black text-white" style={{ fontFamily: 'Syne, sans-serif' }}>{n}</div>
-              <div className="text-[11px] text-white/30 font-medium mt-0.5">{l}</div>
+              <div className="text-2xl font-black text-white" style={{ fontFamily: 'Syne, sans-serif', letterSpacing: '-0.02em' }}>{n}</div>
+              <div className="text-[11px] font-medium mt-0.5" style={{ color: 'rgba(255,255,255,0.28)' }}>{l}</div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* ── Right — Form ── */}
-      <div className="flex-1 flex items-center justify-center p-6 lg:p-10 relative z-10">
-        <div className="w-full max-w-[400px]">
+      {/* ── Right form panel ── */}
+      <div className="flex-1 flex items-center justify-center relative z-10 p-6">
+        <div className="w-full" style={{ maxWidth: 400 }}>
 
           {/* Mobile logo */}
           <div className="lg:hidden text-center mb-10">
-            <CdvLogo size={30} variant="white" className="inline-block mb-3" />
-            <p className="text-white/35 text-[13px] font-semibold tracking-wide">CDV IT Helpdesk</p>
+            <CdvLogo size={28} variant="white" className="inline-block mb-3" />
+            <p className="font-semibold" style={{ color: 'rgba(255,255,255,0.35)', fontSize: 13 }}>CDV IT Helpdesk</p>
           </div>
 
-          {/* Card */}
-          <div className="relative animate-blur-in" style={{
+          {/* Glass card */}
+          <div className="animate-blur-in" style={{
             background: 'rgba(255,255,255,0.05)',
             border: '1px solid rgba(255,255,255,0.09)',
-            borderRadius: '32px',
+            borderRadius: 28,
             backdropFilter: 'blur(40px)',
-            boxShadow: '0 40px 100px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08)',
+            WebkitBackdropFilter: 'blur(40px)',
+            boxShadow: '0 32px 80px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08)',
           }}>
-            {/* Top shimmer line */}
-            <div className="absolute top-0 left-6 right-6 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent rounded-full" />
+            {/* Shimmer top edge */}
+            <div style={{
+              position: 'absolute', top: 0, left: 32, right: 32, height: 1,
+              background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent)',
+              borderRadius: 999,
+            }} />
 
-            <div className="p-8 lg:p-10">
+            <div style={{ padding: '36px 36px 32px' }}>
 
-              {/* Card heading */}
-              <div className="mb-8">
-                <h2 className="text-[22px] font-black text-white leading-tight tracking-tight"
-                  style={{ fontFamily: 'Syne, sans-serif' }}>
+              {/* Heading */}
+              <div style={{ marginBottom: 28 }}>
+                <h2 style={{
+                  fontFamily: 'Syne, sans-serif',
+                  fontSize: 22,
+                  fontWeight: 900,
+                  color: '#fff',
+                  letterSpacing: '-0.02em',
+                  lineHeight: 1.2,
+                  marginBottom: 6,
+                }}>
                   {mode === 'login' ? 'Zaloguj się' : 'Utwórz konto'}
                 </h2>
-                <p className="text-white/35 text-[13px] mt-1.5 font-medium">
+                <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 13, fontWeight: 500 }}>
                   {mode === 'login'
                     ? 'Panel dostępny dla administratorów IT CDV'
                     : 'Nowe konto otrzyma rolę Użytkownika'}
@@ -176,19 +188,31 @@ const Login: React.FC = () => {
               </div>
 
               {/* Mode toggle */}
-              <div className="flex rounded-2xl bg-white/[0.05] border border-white/[0.07] p-1 mb-7 gap-1">
+              <div style={{
+                display: 'flex',
+                background: 'rgba(255,255,255,0.05)',
+                border: '1px solid rgba(255,255,255,0.07)',
+                borderRadius: 16,
+                padding: 4,
+                gap: 4,
+                marginBottom: 24,
+              }}>
                 {(['login', 'register'] as const).map((m) => (
-                  <button
-                    key={m}
-                    type="button"
-                    onClick={() => switchMode(m)}
-                    className={`flex-1 py-2.5 text-[13px] font-bold rounded-xl transition-all duration-200 ${
-                      mode === m
-                        ? 'bg-white/[0.12] text-white shadow-sm'
-                        : 'text-white/30 hover:text-white/55'
-                    }`}
-                    style={{ fontFamily: 'Syne, sans-serif', letterSpacing: '-0.01em' }}
-                  >
+                  <button key={m} type="button" onClick={() => switchMode(m)}
+                    style={{
+                      flex: 1,
+                      padding: '9px 0',
+                      fontFamily: 'Syne, sans-serif',
+                      fontSize: 13,
+                      fontWeight: 700,
+                      letterSpacing: '-0.01em',
+                      borderRadius: 12,
+                      border: 'none',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                      background: mode === m ? 'rgba(255,255,255,0.12)' : 'transparent',
+                      color: mode === m ? '#fff' : 'rgba(255,255,255,0.3)',
+                    }}>
                     {m === 'login' ? 'Logowanie' : 'Rejestracja'}
                   </button>
                 ))}
@@ -196,28 +220,90 @@ const Login: React.FC = () => {
 
               {/* Error */}
               {displayError && (
-                <div className="flex items-start gap-2.5 bg-red-500/10 border border-red-500/20 rounded-2xl p-3.5 mb-6 text-[13px] text-red-300 animate-slide-up-sm">
-                  <AlertCircle size={14} className="flex-shrink-0 mt-0.5" />
-                  <span className="leading-snug">{displayError}</span>
+                <div className="animate-slide-up-sm" style={{
+                  display: 'flex', alignItems: 'flex-start', gap: 10,
+                  background: 'rgba(239,68,68,0.1)',
+                  border: '1px solid rgba(239,68,68,0.2)',
+                  borderRadius: 14, padding: '12px 14px',
+                  marginBottom: 20, fontSize: 13, color: '#fca5a5',
+                }}>
+                  <AlertCircle size={14} style={{ flexShrink: 0, marginTop: 1 }} />
+                  <span style={{ lineHeight: 1.5 }}>{displayError}</span>
                 </div>
               )}
 
               {/* Form */}
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <Field label="Email" icon={<Mail size={14} />} type="email"
-                  value={email} onChange={(v) => { setEmail(v); clearError(); }}
-                  placeholder="admin@cdv.pl" autoComplete="email" />
+              <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
 
-                <Field label="Hasło" icon={<Lock size={14} />} type="password"
-                  value={password} onChange={(v) => { setPassword(v); clearError(); }}
-                  placeholder="••••••••"
-                  autoComplete={mode === 'register' ? 'new-password' : 'current-password'} />
+                {/* Email */}
+                <div>
+                  <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 8 }}>Email</label>
+                  <div style={{ position: 'relative' }}>
+                    <Mail size={13} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.22)', pointerEvents: 'none' }} />
+                    <input
+                      type="email" value={email} required autoComplete="email"
+                      onChange={(e) => { setEmail(e.target.value); clearError(); }}
+                      placeholder="admin@cdv.pl"
+                      style={{
+                        width: '100%', boxSizing: 'border-box',
+                        paddingLeft: 40, paddingRight: 14, paddingTop: 11, paddingBottom: 11,
+                        fontSize: 14, color: '#fff',
+                        background: 'rgba(255,255,255,0.06)',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        borderRadius: 14, outline: 'none',
+                      }}
+                      onFocus={(e) => { e.target.style.borderColor = 'rgba(139,67,214,0.6)'; e.target.style.background = 'rgba(255,255,255,0.09)'; }}
+                      onBlur={(e) => { e.target.style.borderColor = 'rgba(255,255,255,0.1)'; e.target.style.background = 'rgba(255,255,255,0.06)'; }}
+                    />
+                  </div>
+                </div>
 
+                {/* Password */}
+                <div>
+                  <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 8 }}>Hasło</label>
+                  <div style={{ position: 'relative' }}>
+                    <Lock size={13} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.22)', pointerEvents: 'none' }} />
+                    <input
+                      type="password" value={password} required
+                      autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
+                      onChange={(e) => { setPassword(e.target.value); clearError(); }}
+                      placeholder="••••••••"
+                      style={{
+                        width: '100%', boxSizing: 'border-box',
+                        paddingLeft: 40, paddingRight: 14, paddingTop: 11, paddingBottom: 11,
+                        fontSize: 14, color: '#fff',
+                        background: 'rgba(255,255,255,0.06)',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        borderRadius: 14, outline: 'none',
+                      }}
+                      onFocus={(e) => { e.target.style.borderColor = 'rgba(139,67,214,0.6)'; e.target.style.background = 'rgba(255,255,255,0.09)'; }}
+                      onBlur={(e) => { e.target.style.borderColor = 'rgba(255,255,255,0.1)'; e.target.style.background = 'rgba(255,255,255,0.06)'; }}
+                    />
+                  </div>
+                </div>
+
+                {/* Confirm password */}
                 {mode === 'register' && (
                   <div className="animate-slide-up-sm">
-                    <Field label="Powtórz hasło" icon={<Lock size={14} />} type="password"
-                      value={confirmPassword} onChange={(v) => { setConfirmPassword(v); setLocalError(null); }}
-                      placeholder="••••••••" autoComplete="new-password" />
+                    <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 8 }}>Powtórz hasło</label>
+                    <div style={{ position: 'relative' }}>
+                      <Lock size={13} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.22)', pointerEvents: 'none' }} />
+                      <input
+                        type="password" value={confirmPassword} required autoComplete="new-password"
+                        onChange={(e) => { setConfirmPassword(e.target.value); setLocalError(null); }}
+                        placeholder="••••••••"
+                        style={{
+                          width: '100%', boxSizing: 'border-box',
+                          paddingLeft: 40, paddingRight: 14, paddingTop: 11, paddingBottom: 11,
+                          fontSize: 14, color: '#fff',
+                          background: 'rgba(255,255,255,0.06)',
+                          border: '1px solid rgba(255,255,255,0.1)',
+                          borderRadius: 14, outline: 'none',
+                        }}
+                        onFocus={(e) => { e.target.style.borderColor = 'rgba(139,67,214,0.6)'; e.target.style.background = 'rgba(255,255,255,0.09)'; }}
+                        onBlur={(e) => { e.target.style.borderColor = 'rgba(255,255,255,0.1)'; e.target.style.background = 'rgba(255,255,255,0.06)'; }}
+                      />
+                    </div>
                   </div>
                 )}
 
@@ -225,28 +311,29 @@ const Login: React.FC = () => {
                 <button
                   type="submit"
                   disabled={loading || !email || !password || (mode === 'register' && !confirmPassword)}
-                  className="w-full flex items-center justify-center gap-2.5 py-3.5 font-black text-[15px] rounded-2xl transition-all duration-200 disabled:opacity-35 disabled:cursor-not-allowed mt-2 tracking-tight"
                   style={{
-                    fontFamily: 'Syne, sans-serif',
+                    width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                    padding: '13px 0', marginTop: 4,
+                    fontFamily: 'Syne, sans-serif', fontSize: 15, fontWeight: 900, letterSpacing: '-0.01em',
+                    color: '#fff', border: 'none', borderRadius: 16, cursor: 'pointer',
                     background: 'linear-gradient(135deg, #8B43D6 0%, #6B2D8B 100%)',
                     boxShadow: '0 4px 24px rgba(139,67,214,0.4)',
-                    color: '#fff',
-                    letterSpacing: '-0.01em',
+                    opacity: (loading || !email || !password || (mode === 'register' && !confirmPassword)) ? 0.35 : 1,
+                    transition: 'all 0.2s',
                   }}
                 >
-                  {loading ? (
-                    <><Loader2 size={16} className="animate-spin" />{mode === 'login' ? 'Logowanie…' : 'Rejestracja…'}</>
-                  ) : (
-                    <>{mode === 'login' ? 'Zaloguj się' : 'Zarejestruj się'} <ArrowRight size={15} /></>
-                  )}
+                  {loading
+                    ? <><Loader2 size={15} className="animate-spin" />{mode === 'login' ? 'Logowanie…' : 'Rejestracja…'}</>
+                    : <>{mode === 'login' ? 'Zaloguj się' : 'Zarejestruj się'} <ArrowRight size={14} /></>
+                  }
                 </button>
               </form>
 
               {/* Divider */}
-              <div className="flex items-center gap-3 my-6">
-                <div className="flex-1 h-px bg-white/[0.08]" />
-                <span className="text-[11px] text-white/20 font-bold tracking-wider uppercase">lub</span>
-                <div className="flex-1 h-px bg-white/[0.08]" />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '22px 0' }}>
+                <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.07)' }} />
+                <span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.2)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>lub</span>
+                <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.07)' }} />
               </div>
 
               {/* Google */}
@@ -254,19 +341,35 @@ const Login: React.FC = () => {
                 type="button"
                 onClick={loginGoogle}
                 disabled={loading}
-                className="w-full flex items-center justify-center gap-3 py-3.5 font-bold text-[14px] rounded-2xl text-white/80 hover:text-white border border-white/10 hover:border-white/20 bg-white/[0.05] hover:bg-white/[0.09] transition-all duration-200 disabled:opacity-35 group"
-                style={{ letterSpacing: '-0.01em' }}
+                style={{
+                  width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+                  padding: '12px 0',
+                  fontSize: 14, fontWeight: 600, color: 'rgba(255,255,255,0.75)',
+                  background: 'rgba(255,255,255,0.06)',
+                  border: '1px solid rgba(255,255,255,0.11)',
+                  borderRadius: 16, cursor: 'pointer',
+                  opacity: loading ? 0.4 : 1,
+                  transition: 'all 0.2s',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
+                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)';
+                  e.currentTarget.style.color = '#fff';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'rgba(255,255,255,0.06)';
+                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.11)';
+                  e.currentTarget.style.color = 'rgba(255,255,255,0.75)';
+                }}
               >
                 <GoogleIcon />
                 Kontynuuj z Google
-                <span className="ml-auto text-[10px] text-white/20 font-medium normal-case tracking-normal group-hover:text-white/35 transition-colors">
-                  + Gmail sync
-                </span>
               </button>
 
-              <p className="text-center text-[11px] text-white/15 mt-7 font-medium tracking-wide">
+              <p style={{ textAlign: 'center', fontSize: 11, color: 'rgba(255,255,255,0.13)', marginTop: 22, fontWeight: 500 }}>
                 Collegium Da Vinci © {new Date().getFullYear()}
               </p>
+
             </div>
           </div>
         </div>
