@@ -29,9 +29,12 @@ const Changelog: React.FC = () => {
 
       {/* Modal overlay */}
       {open && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setOpen(false)} />
-          <div className="relative w-full max-w-lg bg-[#07112a] border border-white/15 rounded-3xl shadow-2xl overflow-hidden animate-scale-in">
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+          onMouseDown={(e) => { if (e.target === e.currentTarget) setOpen(false); }}
+        >
+          <div className="absolute inset-0 bg-black/65 backdrop-blur-sm" onClick={() => setOpen(false)} />
+          <div className="relative w-full max-w-lg bg-[#0D0A1A] border border-white/12 rounded-3xl shadow-2xl flex flex-col max-h-[85vh] animate-scale-in">
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 bg-white/[0.03]">
               <div className="flex items-center gap-2.5">
@@ -49,7 +52,7 @@ const Changelog: React.FC = () => {
             </div>
 
             {/* Content */}
-            <div className="max-h-[60vh] overflow-y-auto px-6 py-5 space-y-6">
+            <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6 min-h-0">
               {CHANGELOG.map((entry, i) => (
                 <div key={entry.version} className="relative">
                   {/* Version badge */}

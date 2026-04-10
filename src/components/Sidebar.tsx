@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Ticket, PlusCircle, Settings, LogOut,
@@ -8,6 +8,8 @@ import { useAuthStore } from '../store/authStore';
 import { ADMINS } from '../utils/helpers';
 import { ROLE_LABEL, ROLE_COLOR } from '../utils/roles';
 import CdvLogo from './CdvLogo';
+import ProfileEditModal from './ProfileEditModal';
+import { useProfileData } from './ProfileEditModal';
 
 interface NavItem {
   to: string;
@@ -35,8 +37,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
   const { user, role, logout } = useAuthStore();
   const adminRecord = ADMINS.find((a) => a.email === user?.email);
-  const displayName = adminRecord?.name ?? user?.email ?? 'Administrator';
+  const profileData = useProfileData(user?.email ?? undefined);
+  const displayName = profileData?.displayName || adminRecord?.name || user?.displayName || user?.email || 'Administrator';
   const initials = displayName.split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase();
+  const [showProfile, setShowProfile] = useState(false);
 
   return (
     <>
@@ -98,7 +102,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 
         {/* Footer */}
         <div className="px-3 py-4 border-t border-white/8">
-          <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1">
+          <ProfileEditModal open={showProfile} onClose={() => setShowProfile(false)} />
+          <div
+            onClick={() => setShowProfile(true)}
+            className="flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1 cursor-pointer hover:bg-white/[0.06] transition-colors"
+            title="Edytuj profil"
+          >
             <div className="w-8 h-8 rounded-full bg-cdv-gold flex items-center justify-center flex-shrink-0 text-cdv-blue text-xs font-bold shadow">
               {initials}
             </div>

@@ -68,6 +68,7 @@ const CalendarPage: React.FC = () => {
   const navigate = useNavigate();
   const { events, addEvent, deleteEvent } = useCalendarStore();
   const addTicket = useTicketStore((s) => s.addTicket);
+  const linkCalendarEvent = useTicketStore((s) => s.linkCalendarEvent);
   const { user } = useAuthStore();
 
   const [view, setView] = useState<View>(Views.MONTH);
@@ -157,15 +158,17 @@ const CalendarPage: React.FC = () => {
         description: form.description
           ? `[Wydarzenie: ${eventTypeLabel[form.type]}] ${form.description}`
           : `Wydarzenie kalendarza: ${eventTypeLabel[form.type]} — ${form.title}`,
-        category: 'Other', priority: 'medium', requesterName, requesterEmail, room: form.room,
+        category: 'Event', priority: 'medium', requesterName, requesterEmail, room: form.room,
       });
-      await addEvent({
+      const eventId = await addEvent({
         ...form,
         start: localDatetimeToISO(form.start),
         end: localDatetimeToISO(form.end),
         room: form.room,
         linkedTicketId: ticketId,
       });
+      // Bidirectional link: ticket also points back to calendar event
+      await linkCalendarEvent(ticketId, eventId);
       setShowAddModal(false);
       setForm(INITIAL_FORM);
     } finally {

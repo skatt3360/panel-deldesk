@@ -32,7 +32,13 @@
       "Bash(cp \"/Users/szymon.karaszewski/Downloads/drive-download-20260409T192343Z-3-001/Symbol/SVG/Logo-symbol-white.svg\" /Users/szymon.karaszewski/Documents/PROJEKTY/panel-deldesk/public/cdv-symbol-white.svg)",
       "Bash(cp \"/Users/szymon.karaszewski/Downloads/drive-download-20260409T192343Z-3-001/Symbol/SVG/Logo-symbol-dark.svg\" /Users/szymon.karaszewski/Documents/PROJEKTY/panel-deldesk/public/cdv-symbol-dark.svg)",
       "Bash(cp \"/Users/szymon.karaszewski/Downloads/drive-download-20260409T192343Z-3-001/Horizontal/SVG/Logo-horizontal-white.svg\" /Users/szymon.karaszewski/Documents/PROJEKTY/panel-deldesk/public/cdv-horizontal-white.svg)",
-      "Bash(cp \"/Users/szymon.karaszewski/Downloads/drive-download-20260409T192343Z-3-001/Horizontal/SVG/Logo-horizontal-dark.svg\" /Users/szymon.karaszewski/Documents/PROJEKTY/panel-deldesk/public/cdv-horizontal-dark.svg)"
+      "Bash(cp \"/Users/szymon.karaszewski/Downloads/drive-download-20260409T192343Z-3-001/Horizontal/SVG/Logo-horizontal-dark.svg\" /Users/szymon.karaszewski/Documents/PROJEKTY/panel-deldesk/public/cdv-horizontal-dark.svg)",
+      "WebFetch(domain:www.cdv.pl)",
+      "WebFetch(domain:cdv.pl)",
+      "WebSearch",
+      "WebFetch(domain:fontsinuse.com)",
+      "WebFetch(domain:www.uniforma.pl)",
+      "WebFetch(domain:brandfetch.com)"
     ]
   }
 }

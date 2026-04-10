@@ -1,30 +1,36 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* ---- Base ---- */
+/* ─── Base ──────────────────────────────────────────────────────────────────── */
 @layer base {
-  html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
-  body { background-color: #F5F7FA; }
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+  body { background-color: #090610; }
+
+  /* Selection */
+  ::selection { background: rgba(139,67,214,0.35); color: #fff; }
 }
 
-/* ---- Component helpers ---- */
+/* ─── Component helpers ──────────────────────────────────────────────────────── */
 @layer components {
   .input-base {
-    @apply w-full px-3 py-2 text-sm border border-gray-200 rounded-xl
+    @apply w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-xl
            focus:outline-none focus:ring-2 focus:ring-blue-900/20 focus:border-blue-900
            bg-white placeholder:text-gray-400 transition-all duration-200;
   }
   .select-base {
-    @apply text-sm border border-gray-200 rounded-xl px-3 py-2
+    @apply text-sm border border-gray-200 rounded-xl px-3.5 py-2.5
            focus:outline-none focus:ring-2 focus:ring-blue-900/20 focus:border-blue-900 bg-white;
   }
   .stat-card {
     @apply bg-white rounded-2xl border border-gray-200
-           transition-all duration-300 cursor-pointer
-           overflow-hidden relative;
+           transition-all duration-300 cursor-pointer overflow-hidden relative;
     box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.04);
   }
   .stat-card:hover {
@@ -34,15 +40,45 @@
     @apply flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium
            transition-all duration-200;
   }
-  .nav-link-active {
-    @apply bg-white/15 text-white;
+  .nav-link-active  { @apply bg-white/[0.12] text-white; }
+  .nav-link-idle    { @apply text-white/55 hover:text-white/85 hover:bg-white/[0.06]; }
+
+  /* Dark glass card */
+  .glass-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 20px;
+    backdrop-filter: blur(20px);
   }
-  .nav-link-idle {
-    @apply text-white/60 hover:text-white/90;
+
+  /* Purple pill button */
+  .btn-purple {
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full
+           font-semibold text-[13px] text-white transition-all duration-200;
+    background: linear-gradient(135deg, #8B43D6 0%, #6B2D8B 100%);
+    box-shadow: 0 4px 16px rgba(139,67,214,0.3);
+  }
+  .btn-purple:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 24px rgba(139,67,214,0.45);
+  }
+  .btn-purple:active { transform: translateY(0); }
+
+  /* Orange pill button */
+  .btn-orange {
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full
+           font-semibold text-[13px] text-white transition-all duration-200;
+    background: linear-gradient(135deg, #FF6900 0%, #FF8C00 100%);
+    box-shadow: 0 4px 16px rgba(255,105,0,0.3);
+  }
+  .btn-orange:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 24px rgba(255,105,0,0.45);
   }
 }
 
-/* ---- Animations with stagger ---- */
+/* ─── Animation delays ───────────────────────────────────────────────────────── */
+.animate-delay-75  { animation-delay:  75ms; }
 .animate-delay-100 { animation-delay: 100ms; }
 .animate-delay-150 { animation-delay: 150ms; }
 .animate-delay-200 { animation-delay: 200ms; }
@@ -50,100 +86,117 @@
 .animate-delay-300 { animation-delay: 300ms; }
 .animate-delay-350 { animation-delay: 350ms; }
 .animate-delay-400 { animation-delay: 400ms; }
+.animate-delay-500 { animation-delay: 500ms; }
+.animate-delay-600 { animation-delay: 600ms; }
 
-/* ---- React Big Calendar overrides ---- */
-.rbc-calendar { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 13px; }
-.rbc-header {
-  padding: 10px 8px; font-weight: 600; color: #6B7280;
-  background: #F5F7FA; border-bottom: 1px solid #E8ECF2 !important;
-  text-transform: uppercase; font-size: 11px; letter-spacing: 0.05em;
-}
-.rbc-month-view, .rbc-time-view, .rbc-agenda-view { border: none !important; }
-.rbc-day-bg + .rbc-day-bg,
-.rbc-month-row + .rbc-month-row,
-.rbc-header + .rbc-header { border-color: #E8ECF2 !important; }
-.rbc-off-range-bg { background: #FAFBFC; }
-.rbc-today { background-color: #EEF4FF !important; }
-.rbc-toolbar {
-  padding: 14px 16px; border-bottom: 1px solid #E8ECF2;
-  gap: 8px; flex-wrap: wrap;
-}
-.rbc-toolbar-label {
-  font-weight: 700; font-size: 15px; color: #111827;
-  font-family: 'Plus Jakarta Sans', sans-serif;
-}
-.rbc-btn-group button {
-  background: white; border: 1px solid #E8ECF2;
-  color: #6B7280; padding: 6px 14px; font-size: 12px;
-  font-weight: 600; cursor: pointer; transition: all 0.15s;
-  font-family: 'Plus Jakarta Sans', sans-serif;
-}
-.rbc-btn-group button:hover { background: #F5F7FA; color: #003087; border-color: #003087; }
-.rbc-btn-group button.rbc-active {
-  background: #003087; color: white; border-color: #003087;
-}
-.rbc-btn-group button:first-child { border-radius: 10px 0 0 10px; }
-.rbc-btn-group button:last-child { border-radius: 0 10px 10px 0; }
-.rbc-event { border-radius: 8px !important; font-size: 11px !important; font-weight: 600 !important; }
-.rbc-event:focus { outline: none; box-shadow: 0 0 0 2px rgba(0,48,135,0.35); }
-.rbc-show-more { color: #003087; font-weight: 700; font-size: 11px; padding: 2px 4px; }
-.rbc-current-time-indicator { background-color: #003087; height: 2px; }
-.rbc-date-cell { padding: 6px 8px; font-size: 12px; font-weight: 600; color: #6B7280; }
-.rbc-date-cell.rbc-now { color: #003087; }
-
-/* ---- Animated mesh background (shared: login + app) ---- */
-.mesh-bg {
-  background-color: #001233;
-  background-image:
-    radial-gradient(ellipse 80% 60% at 20% 30%, rgba(0, 70, 180, 0.35) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 60% at 80% 70%, rgba(0, 40, 120, 0.4) 0%, transparent 60%),
-    radial-gradient(ellipse 50% 50% at 50% 10%, rgba(255,184,28,0.08) 0%, transparent 60%);
-}
-
-/* App background — dark animated mesh (same family as login) */
+/* ─── App background (dark, CDV-purple tinted) ───────────────────────────────── */
 .app-bg {
-  background-color: #001233;
+  background-color: #090610;
   background-image:
-    radial-gradient(ellipse 80% 60% at 15% 25%, rgba(0, 70, 200, 0.32) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 60% at 85% 75%, rgba(0, 35, 110, 0.38) 0%, transparent 60%),
-    radial-gradient(ellipse 55% 40% at 50% 5%,  rgba(255, 184, 28, 0.07) 0%, transparent 60%);
-  animation: bg-drift 22s ease-in-out infinite alternate;
+    radial-gradient(ellipse 75% 55% at 10% 20%,  rgba(139,67,214,0.14) 0%, transparent 65%),
+    radial-gradient(ellipse 55% 55% at 90% 80%,  rgba(107,45,139,0.12) 0%, transparent 65%),
+    radial-gradient(ellipse 50% 40% at 50% 0%,   rgba(255,105,0,0.05)  0%, transparent 60%);
+  animation: bg-drift 24s ease-in-out infinite alternate;
+}
+
+/* Login / auth page mesh */
+.mesh-bg {
+  background-color: #080510;
+  background-image:
+    radial-gradient(ellipse 80% 70% at 15% 30%,  rgba(139,67,214,0.22) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 60% at 85% 70%,  rgba(107,45,139,0.18) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 50% at 50% 0%,   rgba(255,105,0,0.09)  0%, transparent 55%),
+    radial-gradient(ellipse 40% 40% at 80% 10%,  rgba(45,184,122,0.06) 0%, transparent 55%);
 }
 
 @keyframes bg-drift {
   0%   { background-position: 0% 0%, 100% 100%, 50% 0%; }
-  100% { background-position: 5% 8%, 92% 88%, 55% 5%; }
+  100% { background-position: 6% 10%, 90% 86%, 56% 6%; }
 }
 
-/* Main content area cards sit on top clearly */
-.app-bg main { position: relative; }
+/* ─── React Big Calendar overrides (dark theme) ─────────────────────────────── */
+.rbc-calendar { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 13px; color: rgba(255,255,255,0.75); }
+.rbc-header {
+  padding: 10px 8px; font-weight: 700; color: rgba(255,255,255,0.35);
+  background: transparent; border-bottom: 1px solid rgba(255,255,255,0.08) !important;
+  text-transform: uppercase; font-size: 10px; letter-spacing: 0.08em;
+}
+.rbc-month-view, .rbc-time-view, .rbc-agenda-view { border: none !important; background: transparent; }
+.rbc-day-bg + .rbc-day-bg,
+.rbc-month-row + .rbc-month-row,
+.rbc-header + .rbc-header { border-color: rgba(255,255,255,0.06) !important; }
+.rbc-off-range-bg { background: rgba(0,0,0,0.15); }
+.rbc-today { background-color: rgba(139,67,214,0.1) !important; }
+.rbc-toolbar { padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,0.08); gap: 8px; flex-wrap: wrap; }
+.rbc-toolbar-label { font-weight: 800; font-size: 15px; color: #fff; font-family: 'Syne', sans-serif; }
+.rbc-btn-group button {
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.5); padding: 6px 14px; font-size: 12px;
+  font-weight: 600; cursor: pointer; transition: all 0.15s;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+.rbc-btn-group button:hover { background: rgba(255,255,255,0.1); color: #fff; border-color: rgba(255,255,255,0.2); }
+.rbc-btn-group button.rbc-active { background: rgba(139,67,214,0.7); color: white; border-color: rgba(139,67,214,0.5); }
+.rbc-btn-group button:first-child { border-radius: 10px 0 0 10px; }
+.rbc-btn-group button:last-child  { border-radius: 0 10px 10px 0; }
+.rbc-event { border-radius: 8px !important; font-size: 11px !important; font-weight: 600 !important; }
+.rbc-event:focus { outline: none; box-shadow: 0 0 0 2px rgba(139,67,214,0.5); }
+.rbc-show-more { color: #C49EE8; font-weight: 700; font-size: 11px; }
+.rbc-current-time-indicator { background-color: #FF6900; height: 2px; }
+.rbc-date-cell { padding: 6px 8px; font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.35); }
+.rbc-date-cell.rbc-now { color: #C49EE8; font-weight: 800; }
+.rbc-day-slot .rbc-time-slot { border-top: 1px solid rgba(255,255,255,0.04); }
+.rbc-time-content { border-top: 1px solid rgba(255,255,255,0.08) !important; }
+.rbc-time-header-content { border-left: 1px solid rgba(255,255,255,0.08); }
+.rbc-time-gutter .rbc-time-slot { color: rgba(255,255,255,0.25); font-size: 11px; }
+.rbc-agenda-date-cell, .rbc-agenda-time-cell { color: rgba(255,255,255,0.4); }
+.rbc-agenda-event-cell { color: rgba(255,255,255,0.75); }
+.rbc-agenda-table { border: 1px solid rgba(255,255,255,0.08) !important; }
+.rbc-agenda-table tbody > tr > td { border-top: 1px solid rgba(255,255,255,0.06); }
+.rbc-agenda-table tbody > tr > td + td { border-left: 1px solid rgba(255,255,255,0.06); }
 
-/* ---- Ticket row states ---- */
+/* ─── Ticket row states ──────────────────────────────────────────────────────── */
 .ticket-row-closed {
-  opacity: 0.45;
-  filter: grayscale(0.7);
+  opacity: 0.38;
+  filter: grayscale(0.75);
 }
 .ticket-row-closed:hover {
-  opacity: 0.65;
-  filter: grayscale(0.4);
+  opacity: 0.55;
+  filter: grayscale(0.45);
 }
-
 .ticket-row-resolved {
-  background: linear-gradient(90deg, rgba(16,185,129,0.04) 0%, transparent 60%) !important;
-  box-shadow: inset 3px 0 0 rgba(16,185,129,0.35);
+  background: linear-gradient(90deg, rgba(45,184,122,0.07) 0%, transparent 60%) !important;
+  box-shadow: inset 3px 0 0 rgba(45,184,122,0.4);
 }
 .ticket-row-resolved:hover {
-  background: linear-gradient(90deg, rgba(16,185,129,0.08) 0%, transparent 60%) !important;
+  background: linear-gradient(90deg, rgba(45,184,122,0.12) 0%, transparent 60%) !important;
 }
 
-/* ---- Scrollbar ---- */
-* { scrollbar-width: thin; scrollbar-color: #D1D5DB transparent; }
-*::-webkit-scrollbar { width: 5px; height: 5px; }
-*::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 999px; }
+/* ─── Scrollbar ─────────────────────────────────────────────────────────────── */
+* { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.1) transparent; }
+*::-webkit-scrollbar { width: 4px; height: 4px; }
+*::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 999px; }
+*::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
 *::-webkit-scrollbar-track { background: transparent; }
 
-/* ---- Sidebar dot grid texture ---- */
+/* ─── Sidebar dot-grid texture ──────────────────────────────────────────────── */
 .sidebar-texture {
-  background-image: radial-gradient(circle, rgba(255,255,255,0.04) 1px, transparent 1px);
-  background-size: 20px 20px;
+  background-image: radial-gradient(circle, rgba(255,255,255,0.035) 1px, transparent 1px);
+  background-size: 22px 22px;
 }
+
+/* ─── Geometric decorative ring (login) ─────────────────────────────────────── */
+.deco-ring {
+  border: 1px solid rgba(139,67,214,0.2);
+  border-radius: 50%;
+  animation: rotate-slow 20s linear infinite;
+}
+.deco-ring-inner {
+  border: 1px solid rgba(255,105,0,0.12);
+  border-radius: 50%;
+  animation: rotate-slow 14s linear infinite reverse;
+}
+
+/* ─── Glow effect ───────────────────────────────────────────────────────────── */
+.purple-glow { box-shadow: 0 0 40px rgba(139,67,214,0.25), 0 0 80px rgba(139,67,214,0.1); }
+.orange-glow { box-shadow: 0 0 30px rgba(255,105,0,0.25), 0 0 60px rgba(255,105,0,0.1); }
