@@ -13,7 +13,7 @@ const GoogleIcon = () => (
 );
 
 const Login: React.FC = () => {
-  const { login, loginGoogle, register, loading, error, clearError } = useAuthStore();
+  const { login, loginGoogle, register, loading, googleLoading, error, clearError } = useAuthStore();
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -85,15 +85,16 @@ const Login: React.FC = () => {
             IT Helpdesk Panel
           </p>
 
-          <div className="mb-6" style={{ fontFamily: 'Syne, sans-serif' }}>
-            <div className="font-black text-white leading-none mb-1"
-              style={{ fontSize: 'clamp(40px,4.5vw,64px)', letterSpacing: '-0.03em' }}>
+          <div className="mb-6" style={{ fontFamily: 'Syne, sans-serif', overflow: 'visible' }}>
+            <div className="font-black text-white leading-[0.95] mb-0.5"
+              style={{ fontSize: 52, letterSpacing: '-0.03em', whiteSpace: 'nowrap' }}>
               Panel
             </div>
-            <div className="font-black leading-none mb-1"
+            <div className="font-black leading-[0.95] mb-0.5"
               style={{
-                fontSize: 'clamp(40px,4.5vw,64px)',
+                fontSize: 52,
                 letterSpacing: '-0.03em',
+                whiteSpace: 'nowrap',
                 background: 'linear-gradient(135deg, #C49EE8 0%, #8B43D6 50%, #FF6900 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
@@ -101,8 +102,8 @@ const Login: React.FC = () => {
               }}>
               Helpdesk
             </div>
-            <div className="font-black text-white leading-none"
-              style={{ fontSize: 'clamp(40px,4.5vw,64px)', letterSpacing: '-0.03em' }}>
+            <div className="font-black text-white leading-[0.95]"
+              style={{ fontSize: 52, letterSpacing: '-0.03em', whiteSpace: 'nowrap' }}>
               CDV.
             </div>
           </div>
@@ -340,15 +341,15 @@ const Login: React.FC = () => {
               <button
                 type="button"
                 onClick={loginGoogle}
-                disabled={loading}
+                disabled={loading || googleLoading}
                 style={{
                   width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
                   padding: '12px 0',
                   fontSize: 14, fontWeight: 600, color: 'rgba(255,255,255,0.75)',
-                  background: 'rgba(255,255,255,0.06)',
+                  background: googleLoading ? 'rgba(255,255,255,0.09)' : 'rgba(255,255,255,0.06)',
                   border: '1px solid rgba(255,255,255,0.11)',
-                  borderRadius: 16, cursor: 'pointer',
-                  opacity: loading ? 0.4 : 1,
+                  borderRadius: 16, cursor: googleLoading ? 'default' : 'pointer',
+                  opacity: loading || googleLoading ? 0.7 : 1,
                   transition: 'all 0.2s',
                 }}
                 onMouseEnter={(e) => {
@@ -362,8 +363,10 @@ const Login: React.FC = () => {
                   e.currentTarget.style.color = 'rgba(255,255,255,0.75)';
                 }}
               >
-                <GoogleIcon />
-                Kontynuuj z Google
+                {googleLoading
+                  ? <><span style={{ width: 17, height: 17, border: '2px solid rgba(255,255,255,0.2)', borderTopColor: '#fff', borderRadius: '50%', display: 'inline-block', animation: 'spin 0.8s linear infinite' }} />Przekierowywanie do Google…</>
+                  : <><GoogleIcon />Kontynuuj z Google</>
+                }
               </button>
 
               <p style={{ textAlign: 'center', fontSize: 11, color: 'rgba(255,255,255,0.13)', marginTop: 22, fontWeight: 500 }}>
