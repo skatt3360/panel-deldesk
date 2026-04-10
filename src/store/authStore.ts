@@ -5,11 +5,18 @@ import {
   signOut,
   onAuthStateChanged,
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   GoogleAuthProvider,
   User,
 } from 'firebase/auth';
 import { auth } from '../firebase';
 import { getUserRole, UserRole } from '../utils/roles';
+
+const GMAIL_SCOPE = 'https://www.googleapis.com/auth/gmail.readonly';
+
+// Store pending Gmail token request in sessionStorage so redirect flow can pick it up
+const GMAIL_REDIRECT_KEY = 'cdv-gmail-redirect-pending';
 
 export interface AuthState {
   user:                 User | null;
@@ -29,17 +36,11 @@ export interface AuthState {
   setGoogleAccessToken: (token: string | null) => void;
 }
 
-/** Test if a token actually has Gmail scope by calling the API */
-async function verifyGmailToken(token: string): Promise<boolean> {
-  try {
-    const res = await fetch(
-      'https://gmail.googleapis.com/gmail/v1/users/me/profile',
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-    return res.ok;
-  } catch {
-    return false;
-  }
+function makeGmailProvider() {
+  const p = new GoogleAuthProvider();
+  p.addScope(GMAIL_SCOPE);
+  p.setCustomParameters({ prompt: 'consent', access_type: 'online', include_granted_scopes: 'true' });
+  return p;
 }
 
 export const useAuthStore = create<AuthState>()((setState) => {
@@ -47,6 +48,20 @@ export const useAuthStore = create<AuthState>()((setState) => {
   onAuthStateChanged(auth, (user) => {
     setState({ user, role: getUserRole(user?.email), loading: false, initialized: true });
   });
+
+  // On page load: check if we just came back from a Gmail redirect flow
+  getRedirectResult(auth).then((result) => {
+    if (!result) return;
+    const wasPending = sessionStorage.getItem(GMAIL_REDIRECT_KEY);
+    if (!wasPending) return;
+    sessionStorage.removeItem(GMAIL_REDIRECT_KEY);
+    const credential = GoogleAuthProvider.credentialFromResult(result);
+    const token = credential?.accessToken ?? null;
+    if (token) {
+      console.log('[Gmail] Redirect token obtained, length:', token.length);
+      setState({ googleAccessToken: token, gmailLoading: false });
+    }
+  }).catch(() => {});
 
   return {
     user:              null,
@@ -75,7 +90,7 @@ export const useAuthStore = create<AuthState>()((setState) => {
       }
     },
 
-    // Step 1: Sign in with Google — identity only, no extra scopes
+    // Sign in with Google — identity only
     loginGoogle: async () => {
       setState({ googleLoading: true, error: null });
       const provider = new GoogleAuthProvider();
@@ -97,55 +112,41 @@ export const useAuthStore = create<AuthState>()((setState) => {
       }
     },
 
-    // Step 2: Get Gmail access token via fresh signInWithPopup with Gmail scope
-    // Key: prompt:'consent' forces Google to ALWAYS show the scope selection screen
-    // and return a fresh token WITH the requested scope — no caching bypass issues.
+    // Request Gmail token with Gmail scope
+    // Tries popup first; if COOP still blocks it, falls back to redirect
     requestGmailAccess: async () => {
       setState({ gmailLoading: true, error: null });
-
-      const provider = new GoogleAuthProvider();
-      provider.addScope('https://www.googleapis.com/auth/gmail.readonly');
-      // 'consent' is the ONLY prompt type that guarantees scopes are shown + granted
-      provider.setCustomParameters({
-        prompt: 'consent',
-        access_type: 'online',
-        include_granted_scopes: 'true',
-      });
-
       try {
-        const result = await signInWithPopup(auth, provider);
+        const result = await signInWithPopup(auth, makeGmailProvider());
         const credential = GoogleAuthProvider.credentialFromResult(result);
         const token = credential?.accessToken ?? null;
-
-        console.log('[Gmail] token obtained:', !!token, 'length:', token?.length);
-
-        if (!token) {
-          setState({ error: 'Google nie zwrócił tokenu dostępu. Spróbuj ponownie.', gmailLoading: false });
-          return;
+        console.log('[Gmail] Popup token obtained:', !!token, 'length:', token?.length);
+        if (token) {
+          setState({ googleAccessToken: token, gmailLoading: false, error: null });
+        } else {
+          // Token missing — fall back to redirect
+          console.warn('[Gmail] No token from popup, falling back to redirect');
+          sessionStorage.setItem(GMAIL_REDIRECT_KEY, '1');
+          await signInWithRedirect(auth, makeGmailProvider());
         }
-
-        // Verify the token actually has Gmail scope before saving
-        const valid = await verifyGmailToken(token);
-        console.log('[Gmail] token valid for Gmail API:', valid);
-
-        if (!valid) {
-          setState({
-            error: 'Token nie ma uprawnień do Gmail. Upewnij się że zaakceptowałeś dostęp do poczty w oknie Google.',
-            gmailLoading: false,
-          });
-          return;
-        }
-
-        setState({ googleAccessToken: token, gmailLoading: false, error: null });
       } catch (err: unknown) {
         const code = (err as { code?: string })?.code ?? '';
         if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') {
           setState({ gmailLoading: false }); return;
         }
+        if (code === 'auth/popup-blocked') {
+          // COOP is blocking — use redirect
+          console.warn('[Gmail] Popup blocked by COOP, using redirect');
+          sessionStorage.setItem(GMAIL_REDIRECT_KEY, '1');
+          try {
+            await signInWithRedirect(auth, makeGmailProvider());
+          } catch {
+            setState({ error: 'Nie można otworzyć okna Gmail. Odśwież stronę i spróbuj ponownie.', gmailLoading: false });
+          }
+          return;
+        }
         setState({
-          error: code === 'auth/popup-blocked'
-            ? 'Popup zablokowany — zezwól na popupy dla tej strony.'
-            : `Błąd Gmail (${code || 'nieznany'}).`,
+          error: `Błąd Gmail (${code || 'nieznany'}).`,
           gmailLoading: false,
         });
       }
