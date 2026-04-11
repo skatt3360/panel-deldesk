@@ -39,7 +39,7 @@ const STATUS_CONFIG: Record<TicketStatus, { label: string; dot: string; bg: stri
 const PRIORITY_CONFIG: Record<TicketPriority, { label: string; icon: React.ReactNode; bg: string; text: string; border: string }> = {
   critical: { label: 'Krytyczny', icon: <Flame size={10} />,         bg: 'bg-red-500/20',     text: 'text-red-300',     border: 'border-red-500/30' },
   high:     { label: 'Wysoki',    icon: <AlertTriangle size={10} />, bg: 'bg-orange-500/15',  text: 'text-orange-300',  border: 'border-orange-400/25' },
-  medium:   { label: 'Średni',    icon: <Zap size={10} />,           bg: 'bg-cdv-purple/15',  text: 'text-cdv-purple-light', border: 'border-cdv-purple/25' },
+  medium:   { label: 'Średni',    icon: <Zap size={10} />,           bg: 'bg-white/[0.06]',   text: 'text-white/50',         border: 'border-white/10' },
   low:      { label: 'Niski',     icon: <Clock size={10} />,         bg: 'bg-white/6',        text: 'text-white/35',    border: 'border-white/10' },
 };
 
@@ -119,8 +119,8 @@ const Tickets: React.FC = () => {
   const SortIcon = ({ field }: { field: SortField }) => {
     if (sortField !== field) return <ArrowUpDown size={10} className="opacity-20" />;
     return sortDir === 'asc'
-      ? <ChevronUp size={11} className="text-cdv-purple-light" />
-      : <ChevronDown size={11} className="text-cdv-purple-light" />;
+      ? <ChevronUp size={11} className="text-cdv-orange" />
+      : <ChevronDown size={11} className="text-cdv-orange" />;
   };
 
   return (
@@ -132,7 +132,7 @@ const Tickets: React.FC = () => {
           <h1 className="text-[22px] font-extrabold text-white font-display tracking-tight">Zgłoszenia</h1>
           <p className="text-[12px] text-white/40 mt-0.5">
             {tickets.length} zgłoszeń łącznie
-            {hasFilters && <span className="ml-1 text-cdv-purple-light">· {filtered.length} pasuje do filtrów</span>}
+            {hasFilters && <span className="ml-1 text-cdv-orange">· {filtered.length} pasuje do filtrów</span>}
           </p>
         </div>
         <button
@@ -189,7 +189,7 @@ const Tickets: React.FC = () => {
             value={search}
             onChange={(e) => setSearchParam(e.target.value)}
             placeholder="Szukaj po ID, tytule, osobie…"
-            className="w-full pl-9 pr-8 py-2.5 text-[13px] bg-white/[0.06] border border-white/10 rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:border-cdv-purple/50 focus:bg-white/[0.09] transition-all duration-200"
+            className="w-full pl-9 pr-8 py-2.5 text-[13px] bg-white/[0.06] border border-white/10 rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:border-cdv-orange/50 focus:bg-white/[0.09] transition-all duration-200"
           />
           {search && (
             <button
@@ -211,7 +211,7 @@ const Tickets: React.FC = () => {
           <SlidersHorizontal size={13} />
           Filtry
           {(priorityFilter || categoryFilter) && (
-            <span className="w-4 h-4 rounded-full bg-cdv-purple text-white text-[9px] flex items-center justify-center font-bold">
+            <span className="w-4 h-4 rounded-full bg-cdv-orange text-white text-[9px] flex items-center justify-center font-bold">
               {[priorityFilter, categoryFilter].filter(Boolean).length}
             </span>
           )}
@@ -231,7 +231,7 @@ const Tickets: React.FC = () => {
                 <select
                   value={value}
                   onChange={(e) => setFilter(key, e.target.value)}
-                  className="text-[13px] bg-white/[0.08] border border-white/15 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-cdv-purple/50 transition-all min-w-[140px]"
+                  className="text-[13px] bg-white/[0.08] border border-white/15 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-cdv-orange/50 transition-all min-w-[140px]"
                 >
                   <option value="" className="bg-[#0A0812]">Wszystkie</option>
                   {(options as string[]).map((s) => (
@@ -309,14 +309,14 @@ const Tickets: React.FC = () => {
                   <div className={`absolute left-0 top-3 bottom-3 w-0.5 rounded-r-full ${
                     ticket.priority === 'critical' ? 'bg-red-500' :
                     ticket.priority === 'high' ? 'bg-orange-500' :
-                    ticket.priority === 'medium' ? 'bg-cdv-purple' :
+                    ticket.priority === 'medium' ? 'bg-white/20' :
                     'bg-white/10'
                   }`} />
                 )}
 
                 {/* ID */}
                 <div className="col-span-2">
-                  <span className="font-mono text-[11px] font-bold text-cdv-purple-light/70 group-hover:text-cdv-purple-light transition-colors">
+                  <span className="font-mono text-[11px] font-bold text-cdv-orange/70 group-hover:text-cdv-orange transition-colors">
                     {ticket.id}
                   </span>
                   {ticket.linkedCalendarEventId && (

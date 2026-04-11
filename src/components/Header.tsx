@@ -137,7 +137,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
   const displayTitle = ticketId ? `Zgłoszenie ${ticketId}` : title;
 
   return (
-    <header className="bg-white/[0.06] backdrop-blur-xl border-b border-white/10 px-4 lg:px-6 py-3.5 flex items-center justify-between sticky top-0 z-10">
+    <header className="backdrop-blur-xl border-b px-4 lg:px-6 py-3.5 flex items-center justify-between sticky top-0 z-10" style={{ background: 'rgba(12,14,20,0.92)', borderColor: 'rgba(255,255,255,0.07)' }}>
       {/* Left */}
       <div className="flex items-center gap-3">
         <button
@@ -194,7 +194,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
                         onClick={() => { navigate(`/tickets/${t.id}`); setSearchOpen(false); setSearchQuery(''); }}
                         className="w-full text-left px-4 py-2.5 hover:bg-white/[0.05] transition-colors flex items-center gap-3"
                       >
-                        <span className="font-mono text-[11px] font-bold text-cdv-gold w-16 flex-shrink-0">{t.id}</span>
+                        <span className="font-mono text-[11px] font-bold text-cdv-orange w-16 flex-shrink-0">{t.id}</span>
                         <span className="text-[13px] text-white/80 truncate flex-1">{t.title}</span>
                         <Badge dot className={statusColor[t.status]}>{statusLabel[t.status]}</Badge>
                       </button>
@@ -203,7 +203,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
                   <li className="px-4 py-2 bg-white/[0.03]">
                     <button
                       onClick={() => { navigate(`/tickets?q=${encodeURIComponent(searchQuery)}`); setSearchOpen(false); setSearchQuery(''); }}
-                      className="text-[12px] text-cdv-gold font-semibold hover:underline"
+                      className="text-[12px] text-cdv-orange font-semibold hover:underline"
                     >
                       Pokaż wszystkie wyniki dla „{searchQuery}" →
                     </button>
@@ -238,7 +238,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
             className="p-2 rounded-xl text-white/50 hover:text-white hover:bg-white/10 transition-all duration-200 relative"
           >
             {unreadCount > 0
-              ? <Bell size={18} className="text-cdv-gold" />
+              ? <Bell size={18} className="text-cdv-orange" />
               : <BellOff size={18} />
             }
             {unreadCount > 0 && (
@@ -253,7 +253,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
               {/* Header */}
               <div className="flex items-center justify-between px-4 py-3.5 border-b border-white/10">
                 <div className="flex items-center gap-2">
-                  <Bell size={14} className={unreadCount > 0 ? 'text-cdv-gold' : 'text-white/30'} />
+                  <Bell size={14} className={unreadCount > 0 ? 'text-cdv-orange' : 'text-white/30'} />
                   <h3 className="text-sm font-bold text-white">Powiadomienia</h3>
                   {unreadCount > 0 && (
                     <span className="px-1.5 py-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full">{unreadCount}</span>
@@ -263,7 +263,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
                   {unreadCount > 0 && (
                     <button
                       onClick={markAllRead}
-                      className="flex items-center gap-1 text-[11px] text-white/50 hover:text-cdv-gold transition-colors"
+                      className="flex items-center gap-1 text-[11px] text-white/50 hover:text-cdv-orange transition-colors"
                       title="Oznacz wszystkie jako przeczytane"
                     >
                       <CheckCheck size={13} />
@@ -303,7 +303,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
                             </div>
                             <div className="min-w-0 flex-1">
                               <div className="flex items-center gap-1.5 mb-0.5">
-                                <span className="text-[11px] font-mono font-bold text-cdv-gold">{t.id}</span>
+                                <span className="text-[11px] font-mono font-bold text-cdv-orange">{t.id}</span>
                                 <Badge className={priorityColor[t.priority]}>{priorityLabel[t.priority]}</Badge>
                                 {!isRead && <span className="w-1.5 h-1.5 rounded-full bg-cdv-gold flex-shrink-0" />}
                               </div>
@@ -324,7 +324,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
               <div className="px-4 py-3 border-t border-white/10">
                 <button
                   onClick={() => { navigate('/tickets'); setNotifOpen(false); }}
-                  className="text-[12px] text-cdv-gold hover:underline font-semibold"
+                  className="text-[12px] text-cdv-orange hover:underline font-semibold"
                 >
                   Zobacz wszystkie zgłoszenia →
                 </button>

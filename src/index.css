@@ -11,7 +11,7 @@
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
   }
-  body { background-color: #090610; }
+  body { background-color: #0C0E14; }
 
   /* Selection */
   ::selection { background: rgba(139,67,214,0.35); color: #fff; }
@@ -40,8 +40,8 @@
     @apply flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium
            transition-all duration-200;
   }
-  .nav-link-active  { @apply bg-white/[0.12] text-white; }
-  .nav-link-idle    { @apply text-white/55 hover:text-white/85 hover:bg-white/[0.06]; }
+  .nav-link-active  { @apply text-white; background: rgba(255,105,0,0.12); border-left: 2px solid #FF6900; padding-left: 10px; }
+  .nav-link-idle    { @apply text-white/50 hover:text-white/80 hover:bg-white/[0.05]; border-left: 2px solid transparent; }
 
   /* Dark glass card */
   .glass-card {
@@ -51,16 +51,16 @@
     backdrop-filter: blur(20px);
   }
 
-  /* Purple pill button */
+  /* Orange primary button (CDV brand) */
   .btn-purple {
     @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full
            font-semibold text-[13px] text-white transition-all duration-200;
-    background: linear-gradient(135deg, #8B43D6 0%, #6B2D8B 100%);
-    box-shadow: 0 4px 16px rgba(139,67,214,0.3);
+    background: linear-gradient(135deg, #FF6900 0%, #E85D00 100%);
+    box-shadow: 0 4px 16px rgba(255,105,0,0.3);
   }
   .btn-purple:hover {
     transform: translateY(-1px);
-    box-shadow: 0 6px 24px rgba(139,67,214,0.45);
+    box-shadow: 0 6px 24px rgba(255,105,0,0.45);
   }
   .btn-purple:active { transform: translateY(0); }
 
@@ -89,13 +89,13 @@
 .animate-delay-500 { animation-delay: 500ms; }
 .animate-delay-600 { animation-delay: 600ms; }
 
-/* ─── App background (dark, CDV-purple tinted) ───────────────────────────────── */
+/* ─── App background (dark, CDV orange-tinted) ───────────────────────────────── */
 .app-bg {
-  background-color: #090610;
+  background-color: #0C0E14;
   background-image:
-    radial-gradient(ellipse 75% 55% at 10% 20%,  rgba(139,67,214,0.14) 0%, transparent 65%),
-    radial-gradient(ellipse 55% 55% at 90% 80%,  rgba(107,45,139,0.12) 0%, transparent 65%),
-    radial-gradient(ellipse 50% 40% at 50% 0%,   rgba(255,105,0,0.05)  0%, transparent 60%);
+    radial-gradient(ellipse 60% 50% at 0% 0%,   rgba(255,105,0,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 40% at 100% 100%, rgba(255,105,0,0.05) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 40% at 50% 50%,  rgba(139,67,214,0.04) 0%, transparent 60%);
   animation: bg-drift 24s ease-in-out infinite alternate;
 }
 

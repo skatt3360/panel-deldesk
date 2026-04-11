@@ -65,8 +65,8 @@ const App: React.FC = () => {
       }}>
         <div style={{
           width: 36, height: 36,
-          border: '3px solid rgba(139,67,214,0.2)',
-          borderTopColor: '#8B43D6',
+          border: '3px solid rgba(255,105,0,0.2)',
+          borderTopColor: '#FF6900',
           borderRadius: '50%',
           animation: 'spin 0.8s linear infinite',
         }} />
