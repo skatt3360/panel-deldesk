@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { useTicketStore } from '../store/ticketStore';
 import { useCalendarStore } from '../store/calendarStore';
-import { statusLabel, formatRelative } from '../utils/helpers';
+import { statusLabel, formatRelative, eventTypeColor } from '../utils/helpers';
 import { TicketStatus } from '../types';
 import { format, isFuture, isPast, isToday } from 'date-fns';
 import { pl } from 'date-fns/locale';
@@ -92,8 +92,8 @@ const Events: React.FC = () => {
       {/* Top bar */}
       <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="p-2 rounded-xl bg-cdv-gold/15 border border-cdv-gold/25">
-            <PartyPopper size={16} className="text-cdv-gold" />
+          <div className="p-2 rounded-xl bg-cdv-orange/15 border border-cdv-orange/25">
+            <PartyPopper size={16} className="text-cdv-orange" />
           </div>
           <div>
             <h2 className="text-white font-bold text-[16px]">Eventy CDV</h2>
@@ -102,7 +102,7 @@ const Events: React.FC = () => {
         </div>
         <button
           onClick={() => navigate('/tickets/new')}
-          className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[13px] font-semibold bg-cdv-gold text-cdv-blue hover:brightness-110 transition-all shadow-lg shadow-cdv-gold/20"
+          className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[13px] font-semibold bg-cdv-orange text-white hover:brightness-110 transition-all shadow-lg shadow-cdv-orange/20"
         >
           <PlusCircle size={13} />
           Nowy event
@@ -155,28 +155,32 @@ const Events: React.FC = () => {
             const isUpcoming = calEvent ? isFuture(new Date(calEvent.start)) : false;
             const isTodayEvent = calEvent ? isToday(new Date(calEvent.start)) : false;
 
+            const leftBorderColor = calEvent ? eventTypeColor[calEvent.type] : undefined;
+            const cardBg = calEvent ? eventTypeColor[calEvent.type] + '0d' : undefined;
+
             return (
               <div
                 key={ticket.id}
                 onClick={() => navigate(`/tickets/${ticket.id}`)}
-                className={`group cursor-pointer bg-white/[0.05] border rounded-2xl p-4 hover:bg-white/[0.09] transition-all duration-200 hover:-translate-y-0.5 ${
-                  isPastEvent ? 'opacity-50 border-white/8' :
-                  isTodayEvent ? 'border-cdv-gold/40 shadow-lg shadow-cdv-gold/10' :
-                  'border-white/10 hover:border-white/20'
+                className={`group cursor-pointer border rounded-2xl p-4 transition-all duration-200 hover:-translate-y-0.5 ${
+                  isPastEvent ? 'opacity-50 border-white/8 bg-white/[0.03]' :
+                  isTodayEvent ? 'border-cdv-orange/40 shadow-lg shadow-cdv-orange/10 bg-white/[0.06]' :
+                  'border-white/10 hover:border-white/20 bg-white/[0.05] hover:bg-white/[0.08]'
                 }`}
+                style={leftBorderColor ? { borderLeft: `3px solid ${leftBorderColor}`, background: cardBg } : undefined}
               >
                 {/* Header */}
                 <div className="flex items-start justify-between gap-2 mb-3">
                   <div className="flex items-center gap-2">
-                    <div className={`p-2 rounded-xl border ${isTodayEvent ? 'bg-cdv-gold/20 border-cdv-gold/30' : 'bg-white/[0.07] border-white/10'}`}>
-                      <PartyPopper size={14} className={isTodayEvent ? 'text-cdv-gold' : 'text-white/50'} />
+                    <div className={`p-2 rounded-xl border ${isTodayEvent ? 'bg-cdv-orange/20 border-cdv-orange/30' : 'bg-white/[0.07] border-white/10'}`}>
+                      <PartyPopper size={14} className={isTodayEvent ? 'text-cdv-orange' : 'text-white/50'} />
                     </div>
                     <div>
                       {isTodayEvent && (
-                        <span className="text-[9px] font-bold text-cdv-gold uppercase tracking-widest block">Dziś</span>
+                        <span className="text-[9px] font-bold uppercase tracking-widest block" style={{ color: '#FF6900' }}>Dziś</span>
                       )}
                       {isUpcoming && !isTodayEvent && (
-                        <span className="text-[9px] font-bold text-blue-300/70 uppercase tracking-widest block">Nadchodzące</span>
+                        <span className="text-[9px] font-bold text-blue-400 uppercase tracking-widest block">Nadchodzące</span>
                       )}
                       {isPastEvent && (
                         <span className="text-[9px] font-bold text-white/25 uppercase tracking-widest block">Minione</span>
@@ -190,7 +194,7 @@ const Events: React.FC = () => {
                 </div>
 
                 {/* Title */}
-                <h3 className="text-[14px] font-bold text-white/90 mb-1 group-hover:text-white transition-colors line-clamp-2">
+                <h3 className="text-[14px] font-bold text-white mb-1 group-hover:brightness-110 transition-colors line-clamp-2">
                   {ticket.title}
                 </h3>
                 <p className="text-[12px] text-white/40 font-mono mb-3">{ticket.id}</p>
@@ -243,15 +247,16 @@ const Events: React.FC = () => {
             <div
               key={ev.id}
               onClick={() => navigate('/calendar')}
-              className="group cursor-pointer bg-white/[0.04] border border-dashed border-white/10 rounded-2xl p-4 hover:bg-white/[0.07] transition-all duration-200 hover:-translate-y-0.5"
+              className="group cursor-pointer border border-dashed rounded-2xl p-4 hover:bg-white/[0.07] transition-all duration-200 hover:-translate-y-0.5"
+              style={{ background: eventTypeColor[ev.type] + '0a', borderColor: eventTypeColor[ev.type] + '50', borderLeft: `3px solid ${eventTypeColor[ev.type]}` }}
             >
               <div className="flex items-center gap-2 mb-3">
-                <div className="p-2 rounded-xl bg-white/[0.07] border border-white/10">
-                  <Calendar size={14} className="text-white/40" />
+                <div className="p-2 rounded-xl border" style={{ background: eventTypeColor[ev.type] + '18', borderColor: eventTypeColor[ev.type] + '30' }}>
+                  <Calendar size={14} style={{ color: eventTypeColor[ev.type] }} />
                 </div>
-                <span className="text-[9px] font-bold text-white/25 uppercase tracking-widest">Tylko w kalendarzu</span>
+                <span className="text-[9px] font-bold uppercase tracking-widest" style={{ color: eventTypeColor[ev.type] + 'aa' }}>Tylko w kalendarzu</span>
               </div>
-              <h3 className="text-[14px] font-semibold text-white/60 mb-2 line-clamp-2">{ev.title}</h3>
+              <h3 className="text-[14px] font-semibold text-white/80 mb-2 line-clamp-2">{ev.title}</h3>
               <div className="flex items-center gap-1.5">
                 <Calendar size={12} className="text-white/25" />
                 <span className="text-[12px] text-white/35">

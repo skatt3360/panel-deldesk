@@ -19,6 +19,10 @@ const PRIORITY_ORDER: Record<TicketPriority, number> = {
   critical: 4, high: 3, medium: 2, low: 1,
 };
 
+const STATUS_ORDER: Record<TicketStatus, number> = {
+  open: 5, 'in-progress': 4, pending: 3, resolved: 2, closed: 1,
+};
+
 const CATEGORY_ICON: Record<TicketCategory, React.ReactNode> = {
   Hardware:  <Cpu size={11} />,
   Software:  <Code2 size={11} />,
@@ -49,7 +53,7 @@ const Tickets: React.FC = () => {
   const tickets = useTicketStore((s) => s.tickets);
 
   const [showFilters, setShowFilters] = useState(false);
-  const [sortField, setSortField] = useState<SortField>('createdAt');
+  const [sortField, setSortField] = useState<SortField>('status');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
 
   const statusFilter = (searchParams.get('status') as TicketStatus | null) ?? '';
@@ -102,7 +106,7 @@ const Tickets: React.FC = () => {
       let cmp = 0;
       if (sortField === 'id') cmp = a.id.localeCompare(b.id);
       else if (sortField === 'title') cmp = a.title.localeCompare(b.title);
-      else if (sortField === 'status') cmp = a.status.localeCompare(b.status);
+      else if (sortField === 'status') cmp = STATUS_ORDER[a.status] - STATUS_ORDER[b.status];
       else if (sortField === 'priority') cmp = PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority];
       else if (sortField === 'createdAt') cmp = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
       else if (sortField === 'updatedAt') cmp = new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime();

@@ -132,6 +132,17 @@ const Chat: React.FC = () => {
   const { user } = useAuthStore();
   const { channels, activeChannelId, messages, setActiveChannel, sendMessage, recallMessage, addReaction, uploadFile, createChannel } = useChatStore();
 
+  const [readTimes, setReadTimes] = useState<Record<string, string>>(() => {
+    try { return JSON.parse(localStorage.getItem('cdv-chat-read') ?? '{}'); }
+    catch { return {}; }
+  });
+
+  const markChannelRead = (channelId: string) => {
+    const updated = { ...readTimes, [channelId]: new Date().toISOString() };
+    setReadTimes(updated);
+    localStorage.setItem('cdv-chat-read', JSON.stringify(updated));
+  };
+
   const [input, setInput] = useState('');
   const [replyTo, setReplyTo] = useState<ChatMessage | null>(null);
   const [showNewChannel, setShowNewChannel] = useState(false);
@@ -161,6 +172,11 @@ const Chat: React.FC = () => {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  // Mark active channel as read
+  useEffect(() => {
+    if (activeChannelId) markChannelRead(activeChannelId);
+  }, [activeChannelId, messages.length]);
 
   // Filter channels by search
   const visibleChannels = channels.filter((c) =>
@@ -259,7 +275,7 @@ const Chat: React.FC = () => {
             {visibleChannels.filter((c) => c.type !== 'dm').map((ch) => (
               <button
                 key={ch.id}
-                onClick={() => setActiveChannel(ch.id)}
+                onClick={() => { setActiveChannel(ch.id); markChannelRead(ch.id); }}
                 className={`w-full flex items-center gap-2 px-2.5 py-2 rounded-xl text-[13px] transition-all text-left ${
                   activeChannelId === ch.id
                     ? 'bg-white/15 text-white'
@@ -268,8 +284,8 @@ const Chat: React.FC = () => {
               >
                 <ChanIcon type={ch.type} />
                 <span className="flex-1 truncate font-medium">{ch.name}</span>
-                {ch.lastMessagePreview && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-cdv-gold flex-shrink-0" />
+                {ch.lastMessageAt && (!readTimes[ch.id] || ch.lastMessageAt > readTimes[ch.id]) && ch.lastMessageAt > (readTimes[ch.id] ?? '') && (
+                  <span className="w-2 h-2 rounded-full bg-cdv-orange flex-shrink-0" />
                 )}
               </button>
             ))}

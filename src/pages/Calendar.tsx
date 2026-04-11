@@ -14,7 +14,6 @@ import { useAuthStore } from '../store/authStore';
 import { NewCalendarEventForm, CalendarEvent, CalendarEventType } from '../types';
 import Modal from '../components/ui/Modal';
 import Button from '../components/ui/Button';
-import Badge from '../components/ui/Badge';
 import {
   eventTypeLabel, eventTypeColor, ALL_EVENT_TYPES, formatDate, ADMINS,
 } from '../utils/helpers';
@@ -62,6 +61,22 @@ const TYPE_ICONS: Record<CalendarEventType, React.ReactNode> = {
   appointment: <Users size={13} />,
   deadline: <Flag size={13} />,
   other: <MoreHorizontal size={13} />,
+};
+
+const inputStyle: React.CSSProperties = {
+  width: '100%', boxSizing: 'border-box', padding: '10px 14px', fontSize: 14,
+  color: '#fff', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
+  borderRadius: 12, outline: 'none',
+};
+
+const inputErrorStyle: React.CSSProperties = {
+  ...inputStyle, border: '1px solid rgba(239,68,68,0.6)',
+};
+
+const labelStyle: React.CSSProperties = {
+  display: 'block', fontSize: 11, fontWeight: 700,
+  color: 'rgba(255,255,255,0.35)', marginBottom: 6,
+  textTransform: 'uppercase', letterSpacing: '0.08em',
 };
 
 const CalendarPage: React.FC = () => {
@@ -167,7 +182,6 @@ const CalendarPage: React.FC = () => {
         room: form.room,
         linkedTicketId: ticketId,
       });
-      // Bidirectional link: ticket also points back to calendar event
       await linkCalendarEvent(ticketId, eventId);
       setShowAddModal(false);
       setForm(INITIAL_FORM);
@@ -184,35 +198,35 @@ const CalendarPage: React.FC = () => {
 
   // Custom toolbar
   const CustomToolbar = ({ onNavigate, onView, label }: any) => (
-    <div className="flex items-center justify-between px-4 py-3 border-b border-surface-border flex-wrap gap-3">
+    <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 flex-wrap gap-3">
       <div className="flex items-center gap-2">
         <button
           onClick={() => onNavigate('PREV')}
-          className="p-1.5 rounded-lg hover:bg-surface border border-surface-border text-ink-muted hover:text-ink transition-colors"
+          className="p-1.5 rounded-lg border border-white/10 text-white/50 hover:text-white hover:bg-white/[0.06] transition-colors"
         >
           <ChevronLeft size={16} />
         </button>
         <button
           onClick={() => onNavigate('TODAY')}
-          className="px-3 py-1 rounded-lg text-[12px] font-semibold border border-surface-border hover:bg-surface text-ink-muted hover:text-ink transition-colors"
+          className="px-3 py-1 rounded-lg text-[12px] font-semibold border border-white/10 text-white/50 hover:text-white hover:bg-white/[0.06] transition-colors"
         >
           Dziś
         </button>
         <button
           onClick={() => onNavigate('NEXT')}
-          className="p-1.5 rounded-lg hover:bg-surface border border-surface-border text-ink-muted hover:text-ink transition-colors"
+          className="p-1.5 rounded-lg border border-white/10 text-white/50 hover:text-white hover:bg-white/[0.06] transition-colors"
         >
           <ChevronRight size={16} />
         </button>
-        <h2 className="text-[15px] font-bold text-ink ml-2 capitalize">{label}</h2>
+        <h2 className="text-[15px] font-bold text-white ml-2 capitalize">{label}</h2>
       </div>
-      <div className="flex bg-surface rounded-xl border border-surface-border p-1 gap-0.5">
+      <div className="flex bg-white/[0.06] rounded-xl border border-white/15 p-1 gap-0.5">
         {(['month', 'week', 'day', 'agenda'] as View[]).map((v) => (
           <button
             key={v}
             onClick={() => onView(v)}
             className={`px-3 py-1 rounded-lg text-[12px] font-semibold transition-all duration-200 capitalize ${
-              view === v ? 'bg-white text-cdv-blue shadow-sm' : 'text-ink-muted hover:text-ink'
+              view === v ? 'bg-cdv-orange text-white shadow-sm' : 'text-white/50 hover:text-white'
             }`}
           >
             {MESSAGES[v as keyof typeof MESSAGES] as string}
@@ -228,17 +242,17 @@ const CalendarPage: React.FC = () => {
         {/* Left sidebar */}
         <div className="xl:col-span-1 space-y-4">
           {/* Add button */}
-          <Button
-            className="w-full"
+          <button
             onClick={() => { setForm(INITIAL_FORM); setFormErrors({}); setShowAddModal(true); }}
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-[13px] font-semibold bg-cdv-orange text-white hover:brightness-110 transition-all"
           >
             <PlusCircle size={15} />
             Dodaj wydarzenie
-          </Button>
+          </button>
 
           {/* Stats */}
-          <div className="bg-white rounded-2xl border border-surface-border shadow-card p-4">
-            <h3 className="text-[11px] font-bold text-ink-faint uppercase tracking-wider mb-3">Wg typu</h3>
+          <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 20, padding: 16 }}>
+            <h3 className="text-[11px] font-bold text-white/30 uppercase tracking-wider mb-3">Wg typu</h3>
             <div className="space-y-2.5">
               {ALL_EVENT_TYPES.map((type) => (
                 <div key={type} className="flex items-center gap-2.5">
@@ -246,18 +260,18 @@ const CalendarPage: React.FC = () => {
                     className="w-2.5 h-2.5 rounded-full flex-shrink-0"
                     style={{ backgroundColor: eventTypeColor[type] }}
                   />
-                  <span className="text-[13px] text-ink-muted flex-1 font-medium">{eventTypeLabel[type]}</span>
-                  <span className="text-[12px] font-bold text-ink tabular-nums">{countByType[type]}</span>
+                  <span className="text-[13px] text-white/50 flex-1 font-medium">{eventTypeLabel[type]}</span>
+                  <span className="text-[12px] font-bold text-white tabular-nums">{countByType[type]}</span>
                 </div>
               ))}
             </div>
           </div>
 
           {/* Upcoming events */}
-          <div className="bg-white rounded-2xl border border-surface-border shadow-card p-4">
-            <h3 className="text-[11px] font-bold text-ink-faint uppercase tracking-wider mb-3">Nadchodzące</h3>
+          <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 20, padding: 16 }}>
+            <h3 className="text-[11px] font-bold text-white/30 uppercase tracking-wider mb-3">Nadchodzące</h3>
             {upcomingEvents.length === 0 ? (
-              <p className="text-[13px] text-ink-faint text-center py-3">Brak nadchodzących</p>
+              <p className="text-[13px] text-white/30 text-center py-3">Brak nadchodzących</p>
             ) : (
               <div className="space-y-2">
                 {upcomingEvents.map((ev) => (
@@ -266,21 +280,21 @@ const CalendarPage: React.FC = () => {
                     onClick={() => { setSelectedEvent(ev); setConfirmDelete(false); setShowDetailModal(true); }}
                     className="w-full text-left group"
                   >
-                    <div className="flex items-start gap-2.5 p-2 rounded-xl hover:bg-surface transition-colors">
+                    <div className="flex items-start gap-2.5 p-2 rounded-xl hover:bg-white/[0.06] transition-colors">
                       <div
                         className="w-1.5 flex-shrink-0 rounded-full mt-1"
                         style={{ backgroundColor: eventTypeColor[ev.type], height: '32px' }}
                       />
                       <div className="min-w-0">
-                        <p className="text-[12px] font-semibold text-ink truncate group-hover:text-cdv-blue transition-colors">
+                        <p className="text-[12px] font-semibold text-white/80 truncate group-hover:text-white transition-colors">
                           {ev.title}
                         </p>
-                        <p className="text-[11px] text-ink-faint mt-0.5">
+                        <p className="text-[11px] text-white/30 mt-0.5">
                           {format(new Date(ev.start), 'dd MMM, HH:mm', { locale: pl })}
                         </p>
-                        <div className="flex items-center gap-1 mt-0.5">
+                        <div className="flex items-center gap-1 mt-0.5 text-white/30">
                           {TYPE_ICONS[ev.type]}
-                          <span className="text-[10px] text-ink-faint">{eventTypeLabel[ev.type]}</span>
+                          <span className="text-[10px]">{eventTypeLabel[ev.type]}</span>
                         </div>
                       </div>
                     </div>
@@ -292,7 +306,10 @@ const CalendarPage: React.FC = () => {
         </div>
 
         {/* Calendar */}
-        <div className="xl:col-span-3 bg-white rounded-2xl border border-surface-border shadow-card overflow-hidden">
+        <div
+          className="xl:col-span-3 overflow-hidden"
+          style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 20 }}
+        >
           <div style={{ height: 640 }}>
             <BigCalendar
               localizer={localizer}
@@ -319,21 +336,21 @@ const CalendarPage: React.FC = () => {
       <Modal isOpen={showAddModal} onClose={() => setShowAddModal(false)} title="Dodaj nowe wydarzenie" size="lg">
         <form onSubmit={handleSubmitAdd} className="space-y-4">
           <div>
-            <label className="block text-[12px] font-bold text-ink-faint mb-1.5 uppercase tracking-wider">
-              Tytuł <span className="text-red-500">*</span>
+            <label style={labelStyle}>
+              Tytuł <span className="text-red-400">*</span>
             </label>
             <input
               type="text"
               value={form.title}
               onChange={(e) => setField('title', e.target.value)}
               placeholder="Nazwa wydarzenia..."
-              className={`input-base ${formErrors.title ? '!border-red-400' : ''}`}
+              style={formErrors.title ? inputErrorStyle : inputStyle}
             />
-            {formErrors.title && <p className="mt-1 text-[12px] text-red-500">{formErrors.title}</p>}
+            {formErrors.title && <p className="mt-1 text-[12px] text-red-400">{formErrors.title}</p>}
           </div>
 
           <div>
-            <label className="block text-[12px] font-bold text-ink-faint mb-2 uppercase tracking-wider">Typ</label>
+            <label style={{ ...labelStyle, marginBottom: 8 }}>Typ</label>
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
               {ALL_EVENT_TYPES.map((type) => (
                 <button
@@ -342,8 +359,8 @@ const CalendarPage: React.FC = () => {
                   onClick={() => setField('type', type)}
                   className={`flex items-center gap-2 px-3 py-2.5 rounded-xl text-[13px] font-semibold border transition-all duration-200 ${
                     form.type === type
-                      ? 'border-cdv-blue bg-cdv-blue/5 text-cdv-blue'
-                      : 'border-surface-border text-ink-muted hover:border-gray-300'
+                      ? 'bg-cdv-orange/15 border-cdv-orange/40 text-cdv-orange'
+                      : 'border-white/10 text-white/40 hover:border-white/20'
                   }`}
                 >
                   <span style={{ color: eventTypeColor[type] }}>{TYPE_ICONS[type]}</span>
@@ -355,33 +372,33 @@ const CalendarPage: React.FC = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-[12px] font-bold text-ink-faint mb-1.5 uppercase tracking-wider">
-                Rozpoczęcie <span className="text-red-500">*</span>
+              <label style={labelStyle}>
+                Rozpoczęcie <span className="text-red-400">*</span>
               </label>
               <input
                 type="datetime-local"
                 value={form.start}
                 onChange={(e) => setField('start', e.target.value)}
-                className={`input-base ${formErrors.start ? '!border-red-400' : ''}`}
+                style={formErrors.start ? inputErrorStyle : inputStyle}
               />
-              {formErrors.start && <p className="mt-1 text-[12px] text-red-500">{formErrors.start}</p>}
+              {formErrors.start && <p className="mt-1 text-[12px] text-red-400">{formErrors.start}</p>}
             </div>
             <div>
-              <label className="block text-[12px] font-bold text-ink-faint mb-1.5 uppercase tracking-wider">
-                Zakończenie <span className="text-red-500">*</span>
+              <label style={labelStyle}>
+                Zakończenie <span className="text-red-400">*</span>
               </label>
               <input
                 type="datetime-local"
                 value={form.end}
                 onChange={(e) => setField('end', e.target.value)}
-                className={`input-base ${formErrors.end ? '!border-red-400' : ''}`}
+                style={formErrors.end ? inputErrorStyle : inputStyle}
               />
-              {formErrors.end && <p className="mt-1 text-[12px] text-red-500">{formErrors.end}</p>}
+              {formErrors.end && <p className="mt-1 text-[12px] text-red-400">{formErrors.end}</p>}
             </div>
           </div>
 
           <div>
-            <label className="block text-[12px] font-bold text-ink-faint mb-1.5 uppercase tracking-wider">
+            <label style={labelStyle}>
               <MapPin size={11} className="inline mr-1" />
               Sala / Lokalizacja
             </label>
@@ -390,7 +407,7 @@ const CalendarPage: React.FC = () => {
               value={form.room}
               onChange={(e) => setField('room', e.target.value)}
               placeholder="np. Sala 204, Budynek A..."
-              className="input-base"
+              style={inputStyle}
             />
           </div>
 
@@ -400,28 +417,31 @@ const CalendarPage: React.FC = () => {
               id="allDay"
               checked={form.allDay}
               onChange={(e) => setField('allDay', e.target.checked)}
-              className="rounded border-gray-300 text-cdv-blue focus:ring-cdv-blue w-4 h-4"
+              className="rounded border-white/20 text-cdv-orange focus:ring-cdv-orange w-4 h-4"
             />
-            <label htmlFor="allDay" className="text-[13px] text-ink font-medium">Wydarzenie całodniowe</label>
+            <label htmlFor="allDay" className="text-[13px] text-white/70 font-medium">Wydarzenie całodniowe</label>
           </div>
 
           <div>
-            <label className="block text-[12px] font-bold text-ink-faint mb-1.5 uppercase tracking-wider">Opis</label>
+            <label style={labelStyle}>Opis</label>
             <textarea
               value={form.description}
               onChange={(e) => setField('description', e.target.value)}
               placeholder="Dodatkowe informacje..."
               rows={3}
-              className="input-base resize-none"
+              style={{ ...inputStyle, resize: 'none' }}
             />
           </div>
 
-          <div className="flex items-start gap-2 bg-cdv-blue-light rounded-xl p-3 text-[12px] text-cdv-blue">
-            <Info size={14} className="flex-shrink-0 mt-0.5" />
+          <div
+            className="flex items-start gap-2 rounded-xl p-3 text-[12px]"
+            style={{ background: 'rgba(255,105,0,0.08)', border: '1px solid rgba(255,105,0,0.2)', color: '#fdba74' }}
+          >
+            <Info size={14} className="flex-shrink-0 mt-0.5 text-cdv-orange" />
             <span>Wydarzenie zostanie automatycznie zarejestrowane jako zgłoszenie IT.</span>
           </div>
 
-          <div className="flex gap-3 justify-end pt-2 border-t border-surface-border">
+          <div className="flex gap-3 justify-end pt-2 border-t border-white/10">
             <Button type="button" variant="ghost" onClick={() => setShowAddModal(false)}>Anuluj</Button>
             <Button type="submit" loading={submitting}>
               <PlusCircle size={14} />
@@ -443,45 +463,48 @@ const CalendarPage: React.FC = () => {
                 <span style={{ color: eventTypeColor[selectedEvent.type] }}>{TYPE_ICONS[selectedEvent.type]}</span>
               </div>
               <div>
-                <h3 className="text-[16px] font-bold text-ink">{selectedEvent.title}</h3>
-                <Badge
-                  className="mt-1"
+                <h3 className="text-[16px] font-bold text-white">{selectedEvent.title}</h3>
+                <span
+                  className="inline-block mt-1 px-2 py-0.5 rounded-lg text-[11px] font-semibold"
                   style={{ backgroundColor: eventTypeColor[selectedEvent.type] + '20', color: eventTypeColor[selectedEvent.type] }}
                 >
                   {eventTypeLabel[selectedEvent.type]}
-                </Badge>
+                </span>
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              <div className="bg-surface rounded-xl p-3">
-                <p className="text-[11px] text-ink-faint font-semibold uppercase tracking-wider mb-1">Rozpoczęcie</p>
-                <p className="text-[13px] font-semibold text-ink">{formatDate(selectedEvent.start)}</p>
+              <div className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.05)' }}>
+                <p className="text-[11px] text-white/30 font-semibold uppercase tracking-wider mb-1">Rozpoczęcie</p>
+                <p className="text-[13px] font-semibold text-white">{formatDate(selectedEvent.start)}</p>
               </div>
-              <div className="bg-surface rounded-xl p-3">
-                <p className="text-[11px] text-ink-faint font-semibold uppercase tracking-wider mb-1">Zakończenie</p>
-                <p className="text-[13px] font-semibold text-ink">{formatDate(selectedEvent.end)}</p>
+              <div className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.05)' }}>
+                <p className="text-[11px] text-white/30 font-semibold uppercase tracking-wider mb-1">Zakończenie</p>
+                <p className="text-[13px] font-semibold text-white">{formatDate(selectedEvent.end)}</p>
               </div>
             </div>
 
             {selectedEvent.room && (
-              <div className="flex items-center gap-2 text-[13px] text-ink-muted">
-                <MapPin size={14} className="text-ink-faint" />
+              <div className="flex items-center gap-2 text-[13px] text-white/50">
+                <MapPin size={14} className="text-white/30" />
                 {selectedEvent.room}
               </div>
             )}
 
             {selectedEvent.description && (
-              <div className="bg-surface rounded-xl p-3">
-                <p className="text-[11px] text-ink-faint font-semibold uppercase tracking-wider mb-1">Opis</p>
-                <p className="text-[13px] text-ink">{selectedEvent.description}</p>
+              <div className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.05)' }}>
+                <p className="text-[11px] text-white/30 font-semibold uppercase tracking-wider mb-1">Opis</p>
+                <p className="text-[13px] text-white/70">{selectedEvent.description}</p>
               </div>
             )}
 
             {selectedEvent.linkedTicketId && (
-              <div className="flex items-center gap-2 bg-cdv-blue-light border border-cdv-blue/20 rounded-xl px-3 py-2.5">
-                <ExternalLink size={14} className="text-cdv-blue flex-shrink-0" />
-                <span className="text-[13px] text-cdv-blue font-semibold">
+              <div
+                className="flex items-center gap-2 rounded-xl px-3 py-2.5 border"
+                style={{ background: 'rgba(255,105,0,0.08)', borderColor: 'rgba(255,105,0,0.2)' }}
+              >
+                <ExternalLink size={14} className="text-cdv-orange flex-shrink-0" />
+                <span className="text-[13px] text-cdv-orange font-semibold">
                   Zgłoszenie:{' '}
                   <button
                     onClick={() => { setShowDetailModal(false); navigate(`/tickets/${selectedEvent.linkedTicketId}`); }}
@@ -493,17 +516,20 @@ const CalendarPage: React.FC = () => {
               </div>
             )}
 
-            <div className="flex gap-3 justify-end pt-3 border-t border-surface-border">
+            <div className="flex gap-3 justify-end pt-3 border-t border-white/10">
               {!confirmDelete ? (
                 <Button variant="danger" size="sm" onClick={() => setConfirmDelete(true)}>
                   <Trash2 size={13} />
                   Usuń wydarzenie
                 </Button>
               ) : (
-                <div className="flex items-center gap-2 bg-red-50 border border-red-200 rounded-xl px-3 py-1.5 animate-scale-in">
-                  <span className="text-[12px] text-red-600 font-semibold">Na pewno?</span>
+                <div
+                  className="flex items-center gap-2 rounded-xl px-3 py-1.5 animate-scale-in border"
+                  style={{ background: 'rgba(239,68,68,0.1)', borderColor: 'rgba(239,68,68,0.25)' }}
+                >
+                  <span className="text-[12px] text-red-300 font-semibold">Na pewno?</span>
                   <button onClick={() => handleDelete(selectedEvent.id)} className="text-[12px] font-bold text-white bg-red-500 hover:bg-red-600 px-2 py-0.5 rounded-lg">Tak</button>
-                  <button onClick={() => setConfirmDelete(false)} className="text-[12px] text-ink-muted">Anuluj</button>
+                  <button onClick={() => setConfirmDelete(false)} className="text-[12px] text-white/40">Anuluj</button>
                 </div>
               )}
               <Button variant="ghost" size="sm" onClick={() => setShowDetailModal(false)}>Zamknij</Button>

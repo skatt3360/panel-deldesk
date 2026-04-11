@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Save, RotateCcw, Bell, Shield, Users, Building2, CheckCircle2 } from 'lucide-react';
 import { useTicketStore } from '../store/ticketStore';
+import { useAuthStore } from '../store/authStore';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import { TECHNICIANS } from '../utils/helpers';
@@ -10,6 +11,18 @@ const Settings: React.FC = () => {
   const updateSettings = useTicketStore((s) => s.updateSettings);
   const [form, setForm] = useState({ ...storeSettings });
   const [saved, setSaved] = useState(false);
+
+  const role = useAuthStore((s) => s.role);
+
+  if (role !== 'admin') {
+    return (
+      <div className="flex flex-col items-center justify-center py-24 text-white/30">
+        <Shield size={40} className="mb-4 opacity-25" />
+        <p className="text-[15px] font-semibold text-white/40">Brak dostępu</p>
+        <p className="text-[13px] mt-2 text-white/25">Ta sekcja jest dostępna tylko dla administratorów.</p>
+      </div>
+    );
+  }
 
   const set = <K extends keyof typeof form>(key: K, value: (typeof form)[K]) => {
     setForm((f) => ({ ...f, [key]: value }));
