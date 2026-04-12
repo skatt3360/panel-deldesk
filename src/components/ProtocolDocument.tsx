@@ -174,25 +174,27 @@ export default ProtocolDocument;
 
 // ─── Print helpers ────────────────────────────────────────────────────────────
 export function printProtocol(props: ProtocolDocumentProps) {
-  const { renderToStaticMarkup } = require('react-dom/server');
-  const html = renderToStaticMarkup(<ProtocolDocument {...props} />);
-  const win = window.open('', '_blank', 'width=900,height=700');
-  if (!win) return;
-  win.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Protokół ${props.protocol.id}</title><style>body{margin:0;padding:0;background:#fff;}@media print{body{margin:0;}}</style></head><body>${html}</body></html>`);
-  win.document.close();
-  win.focus();
-  setTimeout(() => win.print(), 400);
+  import('react-dom/server').then(({ renderToStaticMarkup }) => {
+    const html = renderToStaticMarkup(<ProtocolDocument {...props} />);
+    const win = window.open('', '_blank', 'width=900,height=700');
+    if (!win) return;
+    win.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Protokół ${props.protocol.id}</title><style>body{margin:0;padding:0;background:#fff;}@media print{body{margin:0;}}</style></head><body>${html}</body></html>`);
+    win.document.close();
+    win.focus();
+    setTimeout(() => win.print(), 400);
+  });
 }
 
 export function downloadProtocolHTML(props: ProtocolDocumentProps) {
-  const { renderToStaticMarkup } = require('react-dom/server');
-  const html = renderToStaticMarkup(<ProtocolDocument {...props} />);
-  const full = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Protokół ${props.protocol.id}</title><style>body{margin:0;padding:0;background:#fff;}</style></head><body>${html}</body></html>`;
-  const blob = new Blob([full], { type: 'text/html' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `protokol-${props.protocol.id}.html`;
-  a.click();
-  URL.revokeObjectURL(url);
+  import('react-dom/server').then(({ renderToStaticMarkup }) => {
+    const html = renderToStaticMarkup(<ProtocolDocument {...props} />);
+    const full = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Protokół ${props.protocol.id}</title><style>body{margin:0;padding:0;background:#fff;}</style></head><body>${html}</body></html>`;
+    const blob = new Blob([full], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `protokol-${props.protocol.id}.html`;
+    a.click();
+    URL.revokeObjectURL(url);
+  });
 }

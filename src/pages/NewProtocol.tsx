@@ -354,8 +354,8 @@ const NewProtocol: React.FC = () => {
         ...(details.supervisorId ? { supervisorId: details.supervisorId } : {}),
       });
 
-      // Send email automatically via EmailJS
-      await sendProtocolEmail(selectedPerson, selectedEq, {
+      // Send email fire-and-forget — don't block navigation
+      sendProtocolEmail(selectedPerson, selectedEq, {
         protocolId,
         issuedByName,
         issuedBy,
@@ -363,7 +363,7 @@ const NewProtocol: React.FC = () => {
         indefinite: details.indefinite,
         expectedReturnDate: details.indefinite ? null : details.expectedReturnDate,
         notes: details.notes,
-      });
+      }).catch((err) => console.error('[EmailJS]', err));
 
       navigate('/protocols');
     } catch (e) {
