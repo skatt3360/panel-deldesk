@@ -2,24 +2,63 @@ import React, { useState } from 'react';
 import { Save, RotateCcw, Bell, Shield, Users, Building2, CheckCircle2 } from 'lucide-react';
 import { useTicketStore } from '../store/ticketStore';
 import { useAuthStore } from '../store/authStore';
-import Card from '../components/ui/Card';
-import Button from '../components/ui/Button';
 import { TECHNICIANS } from '../utils/helpers';
+
+const glass: React.CSSProperties = {
+  background: 'rgba(255,255,255,0.04)',
+  border: '1px solid rgba(255,255,255,0.08)',
+  borderRadius: 14,
+  padding: '24px 28px',
+};
+const inp: React.CSSProperties = {
+  background: 'rgba(255,255,255,0.05)',
+  border: '1px solid rgba(255,255,255,0.1)',
+  borderRadius: 8,
+  padding: '9px 13px',
+  color: '#fff',
+  fontSize: 13,
+  width: '100%',
+  outline: 'none',
+};
+const sectionLbl: React.CSSProperties = {
+  fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.3)',
+  textTransform: 'uppercase', letterSpacing: '0.08em',
+};
+
+const Toggle: React.FC<{ value: boolean; onChange: () => void }> = ({ value, onChange }) => (
+  <button
+    type="button"
+    onClick={onChange}
+    style={{
+      position: 'relative', display: 'inline-flex', width: 44, height: 24,
+      borderRadius: 99, border: 'none', cursor: 'pointer', flexShrink: 0,
+      background: value ? '#FF6900' : 'rgba(255,255,255,0.12)',
+      transition: 'background 0.2s',
+    }}
+  >
+    <span style={{
+      position: 'absolute', top: 3, left: value ? 23 : 3, width: 18, height: 18,
+      borderRadius: '50%', background: '#fff', transition: 'left 0.2s',
+      boxShadow: '0 1px 4px rgba(0,0,0,0.3)',
+    }} />
+  </button>
+);
 
 const Settings: React.FC = () => {
   const storeSettings = useTicketStore((s) => s.settings);
   const updateSettings = useTicketStore((s) => s.updateSettings);
   const [form, setForm] = useState({ ...storeSettings });
   const [saved, setSaved] = useState(false);
-
   const role = useAuthStore((s) => s.role);
 
   if (role !== 'admin') {
     return (
-      <div className="flex flex-col items-center justify-center py-24 text-white/30">
-        <Shield size={40} className="mb-4 opacity-25" />
-        <p className="text-[15px] font-semibold text-white/40">Brak dostępu</p>
-        <p className="text-[13px] mt-2 text-white/25">Ta sekcja jest dostępna tylko dla administratorów.</p>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 0' }}>
+        <div style={{ width: 56, height: 56, borderRadius: 16, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+          <Shield size={24} style={{ color: 'rgba(255,255,255,0.2)' }} />
+        </div>
+        <p style={{ fontSize: 15, fontWeight: 700, color: 'rgba(255,255,255,0.4)', margin: 0 }}>Brak dostępu</p>
+        <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.25)', marginTop: 8 }}>Ta sekcja jest dostępna tylko dla administratorów.</p>
       </div>
     );
   }
@@ -28,7 +67,6 @@ const Settings: React.FC = () => {
     setForm((f) => ({ ...f, [key]: value }));
     setSaved(false);
   };
-
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
     updateSettings(form);
@@ -36,139 +74,111 @@ const Settings: React.FC = () => {
     setTimeout(() => setSaved(false), 3000);
   };
 
-  const Toggle = ({ value, onChange }: { value: boolean; onChange: () => void }) => (
-    <button
-      type="button"
-      onClick={onChange}
-      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-cdv-blue/30 focus:ring-offset-1 ${
-        value ? 'bg-cdv-blue' : 'bg-surface-border'
-      }`}
-    >
-      <span
-        className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform duration-200 ${
-          value ? 'translate-x-6' : 'translate-x-1'
-        }`}
-      />
-    </button>
-  );
-
-  const inputCls = 'input-base';
+  const PRIORITY_DOTS: Record<string, string> = {
+    slaHoursLow: '#9ca3af', slaHoursMedium: '#60a5fa',
+    slaHoursHigh: '#fb923c', slaHoursCritical: '#f87171',
+  };
+  const PRIORITY_LABELS: Record<string, string> = {
+    slaHoursLow: 'Niski', slaHoursMedium: 'Średni',
+    slaHoursHigh: 'Wysoki', slaHoursCritical: 'Krytyczny',
+  };
 
   return (
-    <div className="max-w-3xl mx-auto animate-fade-in">
-      <form onSubmit={handleSave} className="space-y-5">
+    <div style={{ maxWidth: 820, margin: '0 auto' }}>
+      <div style={{ marginBottom: 28 }}>
+        <h1 style={{ color: '#fff', fontSize: 22, fontWeight: 800, margin: 0, letterSpacing: '-0.02em' }}>Ustawienia</h1>
+        <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 13, marginTop: 4 }}>Konfiguracja systemu helpdesk CDV</p>
+      </div>
+
+      <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
         {/* Organization */}
-        <Card>
-          <div className="flex items-center gap-3 mb-5">
-            <div className="p-2 bg-cdv-blue-light rounded-xl">
-              <Building2 size={16} className="text-cdv-blue" />
+        <div style={glass}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+            <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(255,105,0,0.1)', border: '1px solid rgba(255,105,0,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Building2 size={16} style={{ color: '#FF6900' }} />
             </div>
             <div>
-              <h2 className="text-[14px] font-bold text-ink">Informacje o organizacji</h2>
-              <p className="text-[12px] text-ink-faint">Podstawowe dane wyświetlane w systemie</p>
+              <div style={{ fontSize: 14, fontWeight: 700, color: '#fff' }}>Informacje o organizacji</div>
+              <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', marginTop: 1 }}>Podstawowe dane wyświetlane w systemie</div>
             </div>
           </div>
-          <div className="space-y-4">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {[
-              { id: 'orgName', label: 'Nazwa organizacji', hint: 'Wyświetlana w nagłówkach i raportach', key: 'organizationName', type: 'text' },
-              { id: 'adminEmail', label: 'Email administratora', hint: 'Adres do powiadomień systemowych', key: 'adminEmail', type: 'email' },
-              { id: 'secondEmail', label: 'Drugi email (opcjonalnie)', hint: 'Dodatkowy adres powiadomień', key: 'secondAdminEmail', type: 'email' },
+              { id: 'orgName',     label: 'Nazwa organizacji',       hint: 'Wyświetlana w nagłówkach i raportach',  key: 'organizationName',  type: 'text' },
+              { id: 'adminEmail',  label: 'Email administratora',    hint: 'Adres do powiadomień systemowych',      key: 'adminEmail',        type: 'email' },
+              { id: 'secondEmail', label: 'Drugi email (opcjonalnie)', hint: 'Dodatkowy adres powiadomień',         key: 'secondAdminEmail',  type: 'email' },
             ].map(({ id, label, hint, key, type }) => (
-              <div key={id} className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-6">
-                <div className="sm:w-52 flex-shrink-0">
-                  <label htmlFor={id} className="text-[13px] font-semibold text-ink block">{label}</label>
-                  <p className="text-[11px] text-ink-faint mt-0.5">{hint}</p>
+              <div key={id} style={{ display: 'grid', gridTemplateColumns: '220px 1fr', gap: 16, alignItems: 'start' }}>
+                <div>
+                  <label htmlFor={id} style={{ fontSize: 13, fontWeight: 600, color: '#fff', display: 'block' }}>{label}</label>
+                  <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', margin: '3px 0 0' }}>{hint}</p>
                 </div>
-                <div className="flex-1">
-                  <input
-                    id={id}
-                    type={type}
-                    value={(form as any)[key]}
-                    onChange={(e) => set(key as any, e.target.value)}
-                    className={inputCls}
-                  />
-                </div>
+                <input id={id} type={type} value={(form as any)[key]} onChange={(e) => set(key as any, e.target.value)} style={inp} />
               </div>
             ))}
           </div>
-        </Card>
+        </div>
 
         {/* SLA */}
-        <Card>
-          <div className="flex items-center gap-3 mb-5">
-            <div className="p-2 bg-amber-50 rounded-xl">
-              <Shield size={16} className="text-amber-600" />
+        <div style={glass}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+            <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Shield size={16} style={{ color: '#fbbf24' }} />
             </div>
             <div>
-              <h2 className="text-[14px] font-bold text-ink">Parametry SLA</h2>
-              <p className="text-[12px] text-ink-faint">Czas na rozwiązanie zgłoszenia (w godzinach)</p>
+              <div style={{ fontSize: 14, fontWeight: 700, color: '#fff' }}>Parametry SLA</div>
+              <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', marginTop: 1 }}>Czas na rozwiązanie zgłoszenia (w godzinach)</div>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            {([
-              { key: 'slaHoursLow',      label: 'Niski',    accent: 'border-gray-200 bg-gray-50',     dot: 'bg-gray-400' },
-              { key: 'slaHoursMedium',   label: 'Średni',   accent: 'border-blue-200 bg-blue-50',     dot: 'bg-blue-500' },
-              { key: 'slaHoursHigh',     label: 'Wysoki',   accent: 'border-orange-200 bg-orange-50', dot: 'bg-orange-500' },
-              { key: 'slaHoursCritical', label: 'Krytyczny', accent: 'border-red-200 bg-red-50',      dot: 'bg-red-500' },
-            ] as const).map(({ key, label, accent, dot }) => (
-              <div key={key} className={`rounded-2xl p-4 border ${accent}`}>
-                <div className="flex items-center gap-2 mb-3">
-                  <span className={`w-2.5 h-2.5 rounded-full ${dot}`} />
-                  <label className="text-[12px] font-bold text-ink-muted uppercase tracking-wider">{label}</label>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            {(['slaHoursLow', 'slaHoursMedium', 'slaHoursHigh', 'slaHoursCritical'] as const).map((key) => (
+              <div key={key} style={{ padding: '16px 18px', borderRadius: 10, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 12 }}>
+                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: PRIORITY_DOTS[key], flexShrink: 0 }} />
+                  <span style={{ ...sectionLbl }}>{PRIORITY_LABELS[key]}</span>
                 </div>
-                <div className="flex items-center gap-2">
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <input
-                    type="number"
-                    min={1}
-                    max={720}
+                    type="number" min={1} max={720}
                     value={form[key]}
                     onChange={(e) => set(key, parseInt(e.target.value) || 1)}
-                    className="w-20 px-3 py-1.5 text-sm border border-white/80 rounded-xl focus:outline-none focus:ring-2 focus:ring-cdv-blue/20 bg-white font-semibold text-ink"
+                    style={{ ...inp, width: 80, padding: '7px 10px', fontWeight: 700 }}
                   />
-                  <span className="text-[13px] text-ink-faint font-medium">godz.</span>
+                  <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', fontWeight: 500 }}>godz.</span>
                 </div>
               </div>
             ))}
           </div>
-        </Card>
+        </div>
 
         {/* Team */}
-        <Card>
-          <div className="flex items-center gap-3 mb-5">
-            <div className="p-2 bg-violet-50 rounded-xl">
-              <Users size={16} className="text-violet-600" />
+        <div style={glass}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+            <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(139,92,246,0.1)', border: '1px solid rgba(139,92,246,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Users size={16} style={{ color: '#a78bfa' }} />
             </div>
-            <h2 className="text-[14px] font-bold text-ink">Zespół i przypisania</h2>
+            <div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: '#fff' }}>Zespół i przypisania</div>
+            </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-6 mb-5">
-            <div className="sm:w-52 flex-shrink-0">
-              <label className="text-[13px] font-semibold text-ink block">Domyślny technik</label>
-              <p className="text-[11px] text-ink-faint mt-0.5">Przypisywany do nowych zgłoszeń</p>
+          <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr', gap: 16, alignItems: 'start', marginBottom: 20 }}>
+            <div>
+              <label style={{ fontSize: 13, fontWeight: 600, color: '#fff', display: 'block' }}>Domyślny technik</label>
+              <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', margin: '3px 0 0' }}>Przypisywany do nowych zgłoszeń</p>
             </div>
-            <div className="flex-1">
-              <select
-                value={form.defaultAssignee}
-                onChange={(e) => set('defaultAssignee', e.target.value)}
-                className="select-base w-full"
-              >
-                {TECHNICIANS.map((t) => <option key={t} value={t}>{t}</option>)}
-              </select>
-            </div>
+            <select value={form.defaultAssignee} onChange={(e) => set('defaultAssignee', e.target.value)} style={inp}>
+              {TECHNICIANS.map((t) => <option key={t} value={t}>{t}</option>)}
+            </select>
           </div>
 
           <div>
-            <p className="text-[11px] font-bold text-ink-faint mb-3 uppercase tracking-wider">
-              Aktywni technicy ({TECHNICIANS.length})
-            </p>
-            <div className="flex flex-wrap gap-2">
+            <div style={{ ...sectionLbl, marginBottom: 12 }}>Aktywni technicy ({TECHNICIANS.length})</div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
               {TECHNICIANS.map((t) => (
-                <div
-                  key={t}
-                  className="flex items-center gap-2 px-3 py-1.5 bg-surface rounded-xl border border-surface-border text-[13px] font-medium text-ink"
-                >
-                  <div className="w-5 h-5 rounded-full bg-cdv-blue text-white flex items-center justify-center text-[9px] font-bold flex-shrink-0">
+                <div key={t} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 12px', borderRadius: 20, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', fontSize: 13, fontWeight: 500, color: 'rgba(255,255,255,0.7)' }}>
+                  <div style={{ width: 22, height: 22, borderRadius: '50%', background: 'rgba(255,105,0,0.15)', border: '1px solid rgba(255,105,0,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 800, color: '#FF6900', flexShrink: 0 }}>
                     {t.charAt(0)}
                   </div>
                   {t}
@@ -176,57 +186,57 @@ const Settings: React.FC = () => {
               ))}
             </div>
           </div>
-        </Card>
+        </div>
 
         {/* Notifications */}
-        <Card>
-          <div className="flex items-center gap-3 mb-5">
-            <div className="p-2 bg-emerald-50 rounded-xl">
-              <Bell size={16} className="text-emerald-600" />
+        <div style={glass}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+            <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Bell size={16} style={{ color: '#4ade80' }} />
             </div>
-            <h2 className="text-[14px] font-bold text-ink">Powiadomienia i wygląd</h2>
+            <div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: '#fff' }}>Powiadomienia i wygląd</div>
+            </div>
           </div>
-          <div className="space-y-4">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
             {[
-              {
-                key: 'emailNotifications', title: 'Powiadomienia email',
-                desc: 'Wysyłaj powiadomienia przy zmianach statusu zgłoszeń',
-              },
-              {
-                key: 'darkMode', title: 'Tryb ciemny',
-                desc: 'Przełącz na ciemny motyw interfejsu (wkrótce)',
-              },
-            ].map(({ key, title, desc }) => (
-              <div key={key} className="flex items-center justify-between py-3 border-b border-surface-border last:border-0">
+              { key: 'emailNotifications', title: 'Powiadomienia email', desc: 'Wysyłaj powiadomienia przy zmianach statusu zgłoszeń' },
+              { key: 'darkMode',           title: 'Tryb ciemny',         desc: 'Przełącz na ciemny motyw interfejsu (wkrótce)' },
+            ].map(({ key, title, desc }, i, arr) => (
+              <div key={key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 0', borderBottom: i < arr.length - 1 ? '1px solid rgba(255,255,255,0.06)' : 'none' }}>
                 <div>
-                  <p className="text-[13px] font-semibold text-ink">{title}</p>
-                  <p className="text-[12px] text-ink-faint">{desc}</p>
+                  <p style={{ fontSize: 13, fontWeight: 600, color: '#fff', margin: 0 }}>{title}</p>
+                  <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', margin: '3px 0 0' }}>{desc}</p>
                 </div>
                 <Toggle value={(form as any)[key]} onChange={() => set(key as any, !(form as any)[key])} />
               </div>
             ))}
           </div>
-        </Card>
+        </div>
 
         {/* Actions */}
-        <div className="flex items-center justify-between pb-4">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 16 }}>
           <div>
             {saved && (
-              <p className="text-[13px] text-emerald-600 flex items-center gap-1.5 font-semibold animate-fade-in">
-                <CheckCircle2 size={15} />
-                Ustawienia zostały zapisane
-              </p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 13, fontWeight: 600, color: '#4ade80' }}>
+                <CheckCircle2 size={15} /> Ustawienia zostały zapisane
+              </div>
             )}
           </div>
-          <div className="flex gap-3">
-            <Button type="button" variant="ghost" onClick={() => { setForm({ ...storeSettings }); setSaved(false); }}>
-              <RotateCcw size={14} />
-              Przywróć
-            </Button>
-            <Button type="submit" variant="primary">
-              <Save size={14} />
-              Zapisz ustawienia
-            </Button>
+          <div style={{ display: 'flex', gap: 10 }}>
+            <button
+              type="button"
+              onClick={() => { setForm({ ...storeSettings }); setSaved(false); }}
+              style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.1)', background: 'transparent', color: 'rgba(255,255,255,0.6)', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}
+            >
+              <RotateCcw size={14} /> Przywróć
+            </button>
+            <button
+              type="submit"
+              style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 20px', borderRadius: 10, border: 'none', background: '#FF6900', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}
+            >
+              <Save size={14} /> Zapisz ustawienia
+            </button>
           </div>
         </div>
       </form>
