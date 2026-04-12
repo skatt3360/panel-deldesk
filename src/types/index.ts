@@ -201,6 +201,7 @@ export interface HandoverProtocol {
   issuedByName: string;
   issuedAt: string;
   expectedReturnDate?: string;
+  indefinite?: boolean;
   returnedAt?: string;
   status: ProtocolStatus;
   notes?: string;

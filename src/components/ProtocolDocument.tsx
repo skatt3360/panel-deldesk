@@ -31,8 +31,11 @@ const ProtocolDocument: React.FC<ProtocolDocumentProps> = ({ protocol, person, e
       {/* Header */}
       <div style={{ borderBottom: '3px solid #1a1a1a', paddingBottom: 18, marginBottom: 24, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
         <div>
-          <div style={{ fontSize: 22, fontWeight: 900, letterSpacing: '-0.02em', color: '#1a1a1a' }}>CDV</div>
-          <div style={{ fontSize: 11, color: '#666', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', marginTop: 2 }}>Collegium Da Vinci · Dział IT</div>
+          {/* CDV logo SVG — dark variant for white background */}
+          <svg width="70" height="40" viewBox="0 0 1256 713" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Collegium Da Vinci" style={{ display: 'block' }}>
+            <path fillRule="evenodd" clipRule="evenodd" d="M712.251 326.659V386.628L509.445 505.891L509.106 417.45L612.875 359.873V353.112L509.333 295.476L509.445 206.174L712.251 326.659ZM910.086 488.999H853.224L712.95 223.161L798.877 223.072L879.092 381.154L884.218 381.153L964.434 223.07L1050.36 223.159L910.086 488.999ZM206.678 386.807V326.838L409.483 206.348L409.596 295.656L306.053 353.291V360.052L409.822 417.63L409.483 506.07L206.678 386.807Z" fill="#1E252D" />
+          </svg>
+          <div style={{ fontSize: 11, color: '#666', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', marginTop: 4 }}>Collegium Da Vinci · Dział IT</div>
         </div>
         <div style={{ textAlign: 'right' }}>
           <div style={{ fontSize: 10, color: '#888', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Protokół nr</div>
@@ -47,7 +50,11 @@ const ProtocolDocument: React.FC<ProtocolDocumentProps> = ({ protocol, person, e
         </div>
         <div style={{ fontSize: 12, color: '#666', marginTop: 6 }}>
           Data wydania: <strong>{fmt(protocol.issuedAt)}</strong>
-          {protocol.expectedReturnDate && <>&nbsp;·&nbsp; Zwrot do: <strong>{fmt(protocol.expectedReturnDate)}</strong></>}
+          {protocol.indefinite
+            ? <>&nbsp;·&nbsp; Okres użytkowania: <strong>bezterminowo</strong></>
+            : protocol.expectedReturnDate
+              ? <>&nbsp;·&nbsp; Zwrot do: <strong>{fmt(protocol.expectedReturnDate)}</strong></>
+              : null}
         </div>
       </div>
 
@@ -106,7 +113,7 @@ const ProtocolDocument: React.FC<ProtocolDocumentProps> = ({ protocol, person, e
         <ol style={{ margin: 0, paddingLeft: 18, color: '#333', fontSize: 12 }}>
           <li>Odbiorca zobowiązuje się do dbałości o powierzony sprzęt oraz do jego użytkowania zgodnie z przeznaczeniem i polityką bezpieczeństwa CDV.</li>
           <li>Wszelkie uszkodzenia, awarie lub utrata sprzętu muszą być niezwłocznie zgłaszane do Działu IT.</li>
-          <li>W przypadku rozwiązania stosunku pracy lub zmiany stanowiska, sprzęt należy zwrócić do Działu IT w ciągu 3 dni roboczych.</li>
+          <li>W przypadku rozwiązania stosunku pracy lub zmiany stanowiska, sprzęt należy zwrócić do Działu IT w ciągu 3 dni roboczych.{protocol.indefinite ? ' Sprzęt wydany bezterminowo — obowiązuje do momentu formalnego zwrotu.' : ''}</li>
           <li>Odbiorca ponosi odpowiedzialność materialną za powierzone mienie zgodnie z obowiązującymi przepisami prawa.</li>
           <li>Instalowanie oprogramowania bez licencji lub niezgodnego z polityką CDV jest zabronione.</li>
         </ol>

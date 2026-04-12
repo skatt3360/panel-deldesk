@@ -226,6 +226,7 @@ const Step2: React.FC<{
 interface DetailsData {
   issuedAt: string;
   expectedReturnDate: string;
+  indefinite: boolean;
   supervisorId: string;
   notes: string;
 }
@@ -239,7 +240,7 @@ const Step3: React.FC<{
   const { people } = usePeopleStore();
   const inp: React.CSSProperties = { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, padding: '8px 12px', color: '#fff', fontSize: 13, outline: 'none', width: '100%' };
   const lbl: React.CSSProperties = { fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.45)', marginBottom: 4, display: 'block', textTransform: 'uppercase', letterSpacing: '0.06em' };
-  const set_ = (k: keyof DetailsData, v: string) => onChange({ ...data, [k]: v });
+  const set_ = (k: keyof DetailsData, v: string | boolean) => onChange({ ...data, [k]: v });
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -255,7 +256,22 @@ const Step3: React.FC<{
         </div>
         <div>
           <label style={lbl}>Oczekiwany zwrot</label>
-          <input type="date" value={data.expectedReturnDate} onChange={(e) => set_('expectedReturnDate', e.target.value)} style={inp} />
+          {data.indefinite ? (
+            <div style={{ ...inp, display: 'flex', alignItems: 'center', color: 'rgba(255,255,255,0.35)', fontStyle: 'italic' }}>
+              Bezterminowo
+            </div>
+          ) : (
+            <input type="date" value={data.expectedReturnDate} onChange={(e) => set_('expectedReturnDate', e.target.value)} style={inp} />
+          )}
+          <label style={{ display: 'flex', alignItems: 'center', gap: 7, marginTop: 8, cursor: 'pointer' }}>
+            <input
+              type="checkbox"
+              checked={data.indefinite}
+              onChange={(e) => { set_('indefinite', e.target.checked); if (e.target.checked) set_('expectedReturnDate', ''); }}
+              style={{ accentColor: '#FF6900', width: 14, height: 14 }}
+            />
+            <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', fontWeight: 600 }}>Bezterminowo (brak daty zwrotu)</span>
+          </label>
         </div>
       </div>
 
@@ -294,6 +310,7 @@ const NewProtocol: React.FC = () => {
   const [details, setDetails] = useState<DetailsData>({
     issuedAt: new Date().toISOString().slice(0, 10),
     expectedReturnDate: '',
+    indefinite: false,
     supervisorId: '',
     notes: '',
   });
@@ -319,22 +336,65 @@ const NewProtocol: React.FC = () => {
     if (!selectedPerson || selectedEq.length === 0) return;
     setSaving(true);
     try {
-      await addProtocol({
+      const protocolId = await addProtocol({
         personId: selectedPerson.id,
         equipmentIds: selectedEq.map((e) => e.id),
         issuedBy,
         issuedByName,
         issuedAt: new Date(details.issuedAt).toISOString(),
         status: 'active',
-        ...(details.expectedReturnDate ? { expectedReturnDate: new Date(details.expectedReturnDate).toISOString() } : {}),
+        ...(!details.indefinite && details.expectedReturnDate ? { expectedReturnDate: new Date(details.expectedReturnDate).toISOString() } : {}),
+        ...(details.indefinite ? { indefinite: true } : {}),
         ...(details.notes.trim() ? { notes: details.notes.trim() } : {}),
         ...(details.supervisorId ? { supervisorId: details.supervisorId } : {}),
       });
+
+      // Send email notification to recipient
+      sendProtocolEmail(selectedPerson, selectedEq, {
+        protocolId,
+        issuedByName,
+        issuedAt: details.issuedAt,
+        expectedReturnDate: details.indefinite ? null : details.expectedReturnDate,
+        notes: details.notes,
+      });
+
       navigate('/protocols');
     } catch (e) {
       console.error(e);
       setSaving(false);
     }
+  };
+
+  const sendProtocolEmail = (
+    person: Person,
+    eq: Equipment[],
+    meta: { protocolId: string; issuedByName: string; issuedAt: string; expectedReturnDate: string | null; notes: string }
+  ) => {
+    const fmt = (d: string) => new Date(d).toLocaleDateString('pl-PL', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    const eqList = eq.map((e, i) => `${i + 1}. ${EQUIPMENT_TYPE_LABELS[e.type]} – ${e.brand} ${e.model}${e.serialNumber ? ` (SN: ${e.serialNumber})` : ''}`).join('\n');
+    const returnInfo = meta.expectedReturnDate ? `Planowana data zwrotu: ${fmt(meta.expectedReturnDate)}` : 'Okres użytkowania: bezterminowo';
+    const body = [
+      `Szanowna/y ${person.firstName} ${person.lastName},`,
+      '',
+      `Protokół nr ${meta.protocolId} — potwierdzenie wydania sprzętu IT w Collegium Da Vinci.`,
+      '',
+      `Data wydania: ${fmt(meta.issuedAt)}`,
+      returnInfo,
+      `Wydający: ${meta.issuedByName}`,
+      '',
+      'Wydany sprzęt:',
+      eqList,
+      '',
+      ...(meta.notes ? [`Uwagi: ${meta.notes}`, ''] : []),
+      'Prosimy o potwierdzenie odbioru poprzez podpisanie protokołu.',
+      'W razie pytań prosimy o kontakt z Działem IT CDV.',
+      '',
+      'Dział IT — Collegium Da Vinci',
+    ].join('\n');
+
+    const subject = encodeURIComponent(`Protokół wydania sprzętu IT – ${meta.protocolId}`);
+    const bodyEnc = encodeURIComponent(body);
+    window.open(`mailto:${person.email}?subject=${subject}&body=${bodyEnc}`, '_blank');
   };
 
   const mockProtocol = {
@@ -344,7 +404,8 @@ const NewProtocol: React.FC = () => {
     issuedBy,
     issuedByName,
     issuedAt: details.issuedAt ? new Date(details.issuedAt).toISOString() : new Date().toISOString(),
-    expectedReturnDate: details.expectedReturnDate ? new Date(details.expectedReturnDate).toISOString() : undefined,
+    ...(!details.indefinite && details.expectedReturnDate ? { expectedReturnDate: new Date(details.expectedReturnDate).toISOString() } : {}),
+    ...(details.indefinite ? { indefinite: true } : {}),
     status: 'active' as const,
     notes: details.notes || undefined,
     supervisorId: details.supervisorId || undefined,
