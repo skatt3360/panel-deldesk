@@ -371,6 +371,7 @@ const PeoplePage: React.FC = () => {
   const [filterDept, setFilterDept] = useState<string>('all');
   const [showForm, setShowForm] = useState(false);
   const [editPerson, setEditPerson] = useState<Person | null>(null);
+  const [saveError, setSaveError] = useState('');
 
   const equipmentCountFor = (personId: string) =>
     equipment.filter((e) => e.assignedToId === personId).length;
@@ -399,24 +400,32 @@ const PeoplePage: React.FC = () => {
   };
 
   const handleSave = async (form: { firstName: string; lastName: string; email: string; phone: string; position: string; department: string; supervisorId: string; room: string; notes: string }) => {
-    const data = {
+    setSaveError('');
+    // Firebase RTDB rejects objects with undefined values — only include non-empty optional fields
+    const data: Omit<Person, 'id' | 'createdAt' | 'updatedAt'> = {
       firstName: form.firstName,
       lastName: form.lastName,
       email: form.email,
-      phone: form.phone || undefined,
       position: form.position,
       department: form.department,
-      supervisorId: form.supervisorId || undefined,
-      room: form.room || undefined,
-      notes: form.notes || undefined,
+      ...(form.phone.trim() ? { phone: form.phone.trim() } : {}),
+      ...(form.supervisorId ? { supervisorId: form.supervisorId } : {}),
+      ...(form.room.trim() ? { room: form.room.trim() } : {}),
+      ...(form.notes.trim() ? { notes: form.notes.trim() } : {}),
     };
-    if (editPerson) {
-      await updatePerson(editPerson.id, data);
-    } else {
-      await addPerson(data);
+
+    try {
+      if (editPerson) {
+        await updatePerson(editPerson.id, data);
+      } else {
+        await addPerson(data);
+      }
+      setShowForm(false);
+      setEditPerson(null);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setSaveError(`Błąd zapisu: ${msg}`);
     }
-    setShowForm(false);
-    setEditPerson(null);
   };
 
   const usedDepts = useMemo(() => {
@@ -479,6 +488,11 @@ const PeoplePage: React.FC = () => {
             </h3>
             <button onClick={() => { setShowForm(false); setEditPerson(null); }} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', padding: 4 }}><X size={16} /></button>
           </div>
+          {saveError && (
+            <div style={{ marginBottom: 14, padding: '10px 14px', background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 10, fontSize: 13, color: '#fca5a5' }}>
+              {saveError}
+            </div>
+          )}
           <PersonForm
             initial={editPerson ? {
               firstName: editPerson.firstName,
