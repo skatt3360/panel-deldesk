@@ -155,6 +155,21 @@
 .rbc-agenda-table tbody > tr > td { border-top: 1px solid rgba(255,255,255,0.06); }
 .rbc-agenda-table tbody > tr > td + td { border-left: 1px solid rgba(255,255,255,0.06); }
 
+/* ─── Calendar past day cells ───────────────────────────────────────────────── */
+.rbc-past-day {
+  background: rgba(0,0,0,0.2) !important;
+}
+.rbc-past-day .rbc-date-cell {
+  opacity: 0.45;
+}
+/* Past day number label with subtle strikethrough-like underline */
+.rbc-past-day .rbc-date-cell a,
+.rbc-past-day .rbc-date-cell span {
+  text-decoration: line-through;
+  text-decoration-color: rgba(255,255,255,0.2);
+  opacity: 0.45;
+}
+
 /* ─── Ticket row states ──────────────────────────────────────────────────────── */
 .ticket-row-closed {
   opacity: 0.38;

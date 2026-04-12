@@ -44,9 +44,14 @@ const Dashboard: React.FC = () => {
   const notBreached = tickets.filter((t) => !t.slaBreached).length;
   const slaCompliance = total > 0 ? Math.round((notBreached / total) * 100) : 100;
 
+  const STATUS_ORDER_DASH: Record<string, number> = { open: 5, 'in-progress': 4, pending: 3, resolved: 2, closed: 1 };
   const recentTickets = [...tickets]
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-    .slice(0, 5);
+    .sort((a, b) => {
+      const sc = (STATUS_ORDER_DASH[b.status] ?? 0) - (STATUS_ORDER_DASH[a.status] ?? 0);
+      if (sc !== 0) return sc;
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    })
+    .slice(0, 8);
 
   const criticalOpen = tickets.filter(
     (t) => t.priority === 'critical' && (t.status === 'open' || t.status === 'in-progress')
@@ -172,20 +177,21 @@ const Dashboard: React.FC = () => {
                 {recentTickets.map((ticket, idx) => {
                   const sc = STATUS_CONFIG[ticket.status];
                   const pc = PRIORITY_CONFIG[ticket.priority];
+                  const isDone = ticket.status === 'resolved' || ticket.status === 'closed';
                   return (
                     <tr
                       key={ticket.id}
                       onClick={() => navigate(`/tickets/${ticket.id}`)}
                       className={`cursor-pointer transition-colors group hover:bg-white/[0.04] ${
                         idx < recentTickets.length - 1 ? 'border-b border-white/[0.06]' : ''
-                      }`}
+                      } ${isDone ? 'opacity-45' : ''}`}
                     >
                       <td className="px-5 py-3.5">
                         <div className="flex flex-col gap-0.5">
                           <span className="text-[11px] font-mono font-bold text-cdv-orange/70 group-hover:text-cdv-orange transition-colors">
                             {ticket.id}
                           </span>
-                          <span className="text-[13px] text-white/80 font-medium truncate max-w-[200px]">
+                          <span className={`text-[13px] font-medium truncate max-w-[200px] ${isDone ? 'line-through text-white/40' : 'text-white/80'}`}>
                             {ticket.title}
                           </span>
                         </div>

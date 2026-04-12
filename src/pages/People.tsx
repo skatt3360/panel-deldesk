@@ -66,6 +66,7 @@ const PersonForm: React.FC<PersonFormProps> = ({ initial, departments, people, e
   const [form, setForm] = useState<PersonFormData>(initial ?? emptyPersonForm());
   const [newDept, setNewDept] = useState('');
   const [addingDept, setAddingDept] = useState(false);
+  const [formError, setFormError] = useState('');
 
   const set_ = (k: keyof PersonFormData, v: string) => setForm((f) => ({ ...f, [k]: v }));
 
@@ -118,10 +119,14 @@ const PersonForm: React.FC<PersonFormProps> = ({ initial, departments, people, e
       <div>
         <label style={lbl}>Dział *</label>
         <div style={{ display: 'flex', gap: 8 }}>
-          <select value={form.department} onChange={(e) => set_('department', e.target.value)} style={{ ...inp, flex: 1 }}>
-            <option value="">— wybierz dział —</option>
-            {departments.map((d) => <option key={d.id} value={d.name}>{d.name}</option>)}
-          </select>
+          {departments.length > 0 ? (
+            <select value={form.department} onChange={(e) => set_('department', e.target.value)} style={{ ...inp, flex: 1 }}>
+              <option value="">— wybierz dział —</option>
+              {departments.map((d) => <option key={d.id} value={d.name}>{d.name}</option>)}
+            </select>
+          ) : (
+            <input value={form.department} onChange={(e) => set_('department', e.target.value)} style={{ ...inp, flex: 1 }} placeholder="Wpisz nazwę działu" />
+          )}
           {!addingDept && (
             <button onClick={() => setAddingDept(true)} style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.12)', background: 'transparent', color: '#FF6900', fontSize: 12, cursor: 'pointer', whiteSpace: 'nowrap', fontWeight: 600 }}>
               + Nowy
@@ -178,14 +183,27 @@ const PersonForm: React.FC<PersonFormProps> = ({ initial, departments, people, e
         <textarea value={form.notes} onChange={(e) => set_('notes', e.target.value)} style={{ ...inp, minHeight: 60, resize: 'vertical' }} placeholder="Dodatkowe informacje..." />
       </div>
 
+      {formError && (
+        <div style={{ padding: '10px 14px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: 10, fontSize: 13, color: '#fca5a5' }}>
+          {formError}
+        </div>
+      )}
       <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', paddingTop: 8, borderTop: '1px solid rgba(255,255,255,0.08)' }}>
         <button onClick={onCancel} style={{ padding: '8px 18px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.12)', background: 'transparent', color: 'rgba(255,255,255,0.6)', fontSize: 13, cursor: 'pointer', fontWeight: 600 }}>
           Anuluj
         </button>
         <button
           onClick={() => {
-            if (!form.firstName || !form.lastName || !form.email || !form.position || !form.department) {
-              alert('Wypełnij wymagane pola.'); return;
+            setFormError('');
+            const missing = [];
+            if (!form.firstName.trim()) missing.push('Imię');
+            if (!form.lastName.trim()) missing.push('Nazwisko');
+            if (!form.email.trim()) missing.push('Email');
+            if (!form.position.trim()) missing.push('Stanowisko');
+            if (!form.department.trim()) missing.push('Dział');
+            if (missing.length > 0) {
+              setFormError(`Wypełnij wymagane pola: ${missing.join(', ')}`);
+              return;
             }
             onSave(form);
           }}

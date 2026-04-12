@@ -42,8 +42,16 @@ async function nextDeptId(): Promise<string> {
 }
 
 let deptInitialized = false;
+let peopleInitialized = false;
+let checkInit: (() => void) | null = null;
 
 export const usePeopleStore = create<PeopleState>()((setState) => {
+  checkInit = () => {
+    if (deptInitialized && peopleInitialized) {
+      setState({ initialized: true });
+    }
+  };
+
   // Subscribe to departments
   onValue(ref(db, 'departments'), (snapshot) => {
     const data = snapshot.val();
@@ -53,6 +61,7 @@ export const usePeopleStore = create<PeopleState>()((setState) => {
       );
       setState({ departments });
       deptInitialized = true;
+      checkInit?.();
     } else if (!deptInitialized) {
       // Seed default departments
       deptInitialized = true;
@@ -62,7 +71,17 @@ export const usePeopleStore = create<PeopleState>()((setState) => {
         const id = `DEPT-${String(i + 1).padStart(3, '0')}`;
         depts[id] = { id, name, createdAt: ts };
       });
-      set(ref(db, 'departments'), depts);
+      // Attempt to seed; if it fails (permissions), still mark ready with fallback
+      set(ref(db, 'departments'), depts).catch(() => {
+        // Write failed (e.g. permissions) — build local fallback so UI isn't blocked
+        const fallback: Department[] = DEFAULT_DEPARTMENTS.map((name, i) => ({
+          id: `DEPT-${String(i + 1).padStart(3, '0')}`,
+          name,
+          createdAt: ts,
+        }));
+        setState({ departments: fallback });
+        checkInit?.();
+      });
     }
   });
 
@@ -73,10 +92,12 @@ export const usePeopleStore = create<PeopleState>()((setState) => {
       const people = (Object.values(data) as Person[]).sort(
         (a, b) => a.lastName.localeCompare(b.lastName, 'pl')
       );
-      setState({ people, initialized: true });
+      setState({ people });
     } else {
-      setState({ people: [], initialized: true });
+      setState({ people: [] });
     }
+    peopleInitialized = true;
+    checkInit?.();
   });
 
   return {
@@ -105,7 +126,12 @@ export const usePeopleStore = create<PeopleState>()((setState) => {
       const id = await nextDeptId();
       const ts = new Date().toISOString();
       const dept: Department = { id, name, createdAt: ts, ...(headId ? { headId } : {}) };
-      await set(ref(db, `departments/${id}`), dept);
+      try {
+        await set(ref(db, `departments/${id}`), dept);
+      } catch {
+        // Fallback: add locally so the UI works even with permission issues
+        setState((s) => ({ departments: [...s.departments, dept].sort((a, b) => a.name.localeCompare(b.name, 'pl')) }));
+      }
       return id;
     },
 

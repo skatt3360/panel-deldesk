@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { Calendar as BigCalendar, dateFnsLocalizer, Views, View } from 'react-big-calendar';
-import { format, parse, startOfWeek, getDay, isToday, isFuture, isPast } from 'date-fns';
+import { format, parse, startOfWeek, getDay, isToday, isFuture, isPast, isBefore, startOfDay } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import {
   PlusCircle, Trash2, Info, ExternalLink, MapPin,
@@ -142,6 +142,21 @@ const CalendarPage: React.FC = () => {
         fontFamily: 'Plus Jakarta Sans, sans-serif',
       },
     };
+  };
+
+  // Style past days in month view
+  const dayPropGetter = (date: Date) => {
+    const today = startOfDay(new Date());
+    if (isBefore(startOfDay(date), today) && !isToday(date)) {
+      return {
+        style: {
+          background: 'rgba(0,0,0,0.18)',
+          opacity: 0.7,
+        },
+        className: 'rbc-past-day',
+      };
+    }
+    return {};
   };
 
   const setField = <K extends keyof typeof form>(key: K, val: (typeof form)[K]) => {
@@ -322,6 +337,7 @@ const CalendarPage: React.FC = () => {
               onSelectSlot={handleSelectSlot}
               onSelectEvent={handleSelectEvent}
               eventPropGetter={eventStyleGetter}
+              dayPropGetter={dayPropGetter}
               messages={MESSAGES}
               culture="pl"
               style={{ height: '100%' }}
