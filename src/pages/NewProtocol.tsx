@@ -118,7 +118,7 @@ const Step1: React.FC<{
                   alert('Wypełnij wymagane pola'); return;
                 }
                 const { addPerson: ap } = usePeopleStore.getState();
-                const id = await ap({ ...newPerson, phone: undefined, supervisorId: undefined, room: undefined, notes: undefined });
+                const id = await ap({ firstName: newPerson.firstName, lastName: newPerson.lastName, email: newPerson.email, position: newPerson.position, department: newPerson.department });
                 const created = usePeopleStore.getState().people.find((p) => p.id === id);
                 if (created) onSelect(created);
                 setShowAdd(false);
@@ -325,10 +325,10 @@ const NewProtocol: React.FC = () => {
         issuedBy,
         issuedByName,
         issuedAt: new Date(details.issuedAt).toISOString(),
-        expectedReturnDate: details.expectedReturnDate ? new Date(details.expectedReturnDate).toISOString() : undefined,
         status: 'active',
-        notes: details.notes || undefined,
-        supervisorId: details.supervisorId || undefined,
+        ...(details.expectedReturnDate ? { expectedReturnDate: new Date(details.expectedReturnDate).toISOString() } : {}),
+        ...(details.notes.trim() ? { notes: details.notes.trim() } : {}),
+        ...(details.supervisorId ? { supervisorId: details.supervisorId } : {}),
       });
       navigate('/protocols');
     } catch (e) {

@@ -274,36 +274,27 @@ const EquipmentPage: React.FC = () => {
     return p ? `${p.firstName} ${p.lastName}` : id;
   };
 
+  const stripUndefined = (form: FormData) => ({
+    type: form.type,
+    brand: form.brand,
+    model: form.model,
+    serialNumber: form.serialNumber,
+    inventoryNumber: form.inventoryNumber,
+    status: form.status,
+    ...(form.purchasedAt ? { purchasedAt: form.purchasedAt } : {}),
+    ...(form.warrantyUntil ? { warrantyUntil: form.warrantyUntil } : {}),
+    ...(form.location.trim() ? { location: form.location.trim() } : {}),
+    ...(form.notes.trim() ? { notes: form.notes.trim() } : {}),
+  });
+
   const handleAdd = async (form: FormData) => {
-    await addEquipment({
-      type: form.type,
-      brand: form.brand,
-      model: form.model,
-      serialNumber: form.serialNumber,
-      inventoryNumber: form.inventoryNumber,
-      status: form.status,
-      purchasedAt: form.purchasedAt || undefined,
-      warrantyUntil: form.warrantyUntil || undefined,
-      location: form.location || undefined,
-      notes: form.notes || undefined,
-    });
+    await addEquipment(stripUndefined(form));
     setShowForm(false);
   };
 
   const handleEdit = async (form: FormData) => {
     if (!editItem) return;
-    await updateEquipment(editItem.id, {
-      type: form.type,
-      brand: form.brand,
-      model: form.model,
-      serialNumber: form.serialNumber,
-      inventoryNumber: form.inventoryNumber,
-      status: form.status,
-      purchasedAt: form.purchasedAt || undefined,
-      warrantyUntil: form.warrantyUntil || undefined,
-      location: form.location || undefined,
-      notes: form.notes || undefined,
-    });
+    await updateEquipment(editItem.id, stripUndefined(form));
     setEditItem(null);
   };
 
