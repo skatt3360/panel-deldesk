@@ -4,6 +4,7 @@ import {
   ChevronRight, ChevronLeft, User, Package, FileText,
   Eye, Search, X, CheckCircle, Plus,
 } from 'lucide-react';
+import emailjs from '@emailjs/browser';
 import { useProtocolStore } from '../store/protocolStore';
 import { usePeopleStore } from '../store/peopleStore';
 import { useEquipmentStore } from '../store/equipmentStore';
@@ -11,6 +12,10 @@ import { useAuthStore } from '../store/authStore';
 import { Person, Equipment } from '../types';
 import { EQUIPMENT_TYPE_LABELS } from '../data/equipmentCatalog';
 import ProtocolDocument from '../components/ProtocolDocument';
+
+const EMAILJS_SERVICE  = import.meta.env.VITE_EMAILJS_SERVICE_ID  as string;
+const EMAILJS_TEMPLATE = import.meta.env.VITE_EMAILJS_TEMPLATE_ID as string;
+const EMAILJS_KEY      = import.meta.env.VITE_EMAILJS_PUBLIC_KEY  as string;
 
 const STEPS = [
   { label: 'Pracownik', icon: <User size={14} /> },
@@ -349,11 +354,13 @@ const NewProtocol: React.FC = () => {
         ...(details.supervisorId ? { supervisorId: details.supervisorId } : {}),
       });
 
-      // Send email notification to recipient
-      sendProtocolEmail(selectedPerson, selectedEq, {
+      // Send email automatically via EmailJS
+      await sendProtocolEmail(selectedPerson, selectedEq, {
         protocolId,
         issuedByName,
+        issuedBy,
         issuedAt: details.issuedAt,
+        indefinite: details.indefinite,
         expectedReturnDate: details.indefinite ? null : details.expectedReturnDate,
         notes: details.notes,
       });
@@ -365,36 +372,50 @@ const NewProtocol: React.FC = () => {
     }
   };
 
-  const sendProtocolEmail = (
+  const sendProtocolEmail = async (
     person: Person,
     eq: Equipment[],
-    meta: { protocolId: string; issuedByName: string; issuedAt: string; expectedReturnDate: string | null; notes: string }
+    meta: { protocolId: string; issuedByName: string; issuedBy: string; issuedAt: string; indefinite: boolean; expectedReturnDate: string | null; notes: string }
   ) => {
     const fmt = (d: string) => new Date(d).toLocaleDateString('pl-PL', { day: '2-digit', month: '2-digit', year: 'numeric' });
-    const eqList = eq.map((e, i) => `${i + 1}. ${EQUIPMENT_TYPE_LABELS[e.type]} – ${e.brand} ${e.model}${e.serialNumber ? ` (SN: ${e.serialNumber})` : ''}`).join('\n');
-    const returnInfo = meta.expectedReturnDate ? `Planowana data zwrotu: ${fmt(meta.expectedReturnDate)}` : 'Okres użytkowania: bezterminowo';
-    const body = [
-      `Szanowna/y ${person.firstName} ${person.lastName},`,
-      '',
-      `Protokół nr ${meta.protocolId} — potwierdzenie wydania sprzętu IT w Collegium Da Vinci.`,
-      '',
-      `Data wydania: ${fmt(meta.issuedAt)}`,
-      returnInfo,
-      `Wydający: ${meta.issuedByName}`,
-      '',
-      'Wydany sprzęt:',
-      eqList,
-      '',
-      ...(meta.notes ? [`Uwagi: ${meta.notes}`, ''] : []),
-      'Prosimy o potwierdzenie odbioru poprzez podpisanie protokołu.',
-      'W razie pytań prosimy o kontakt z Działem IT CDV.',
-      '',
-      'Dział IT — Collegium Da Vinci',
-    ].join('\n');
 
-    const subject = encodeURIComponent(`Protokół wydania sprzętu IT – ${meta.protocolId}`);
-    const bodyEnc = encodeURIComponent(body);
-    window.open(`mailto:${person.email}?subject=${subject}&body=${bodyEnc}`, '_blank');
+    const returnInfo = meta.indefinite
+      ? 'Okres użytkowania: <strong>bezterminowo</strong>'
+      : meta.expectedReturnDate
+        ? `Planowana data zwrotu: <strong>${fmt(meta.expectedReturnDate)}</strong>`
+        : 'Brak określonej daty zwrotu';
+
+    const equipmentRows = eq.map((e, i) => `
+      <tr style="background:${i % 2 === 0 ? '#fff' : '#fafafa'}">
+        <td style="padding:7px 10px;border:1px solid #ddd;color:#555;font-weight:600;">${i + 1}.</td>
+        <td style="padding:7px 10px;border:1px solid #ddd;">${EQUIPMENT_TYPE_LABELS[e.type]}</td>
+        <td style="padding:7px 10px;border:1px solid #ddd;font-weight:600;">${e.brand} ${e.model}</td>
+        <td style="padding:7px 10px;border:1px solid #ddd;font-family:monospace;font-size:11px;">${e.serialNumber || '—'}</td>
+        <td style="padding:7px 10px;border:1px solid #ddd;font-family:monospace;font-size:11px;">${e.inventoryNumber || '—'}</td>
+      </tr>`).join('');
+
+    const notesBlock = meta.notes.trim()
+      ? `<div style="margin-top:10px;font-size:12px;color:#555;"><strong>Uwagi do protokołu:</strong> ${meta.notes}</div>`
+      : '';
+
+    const templateParams = {
+      protocol_id:          meta.protocolId,
+      recipient_email:      person.email,
+      recipient_name:       `${person.firstName} ${person.lastName}`,
+      recipient_position:   person.position,
+      recipient_department: person.department,
+      recipient_phone:      person.phone || '—',
+      issued_by_name:       meta.issuedByName,
+      issued_by_email:      meta.issuedBy,
+      issued_at:            fmt(meta.issuedAt),
+      return_info:          returnInfo,
+      equipment_rows:       equipmentRows,
+      equipment_count:      String(eq.length),
+      notes_block:          notesBlock,
+      generated_at:         fmt(new Date().toISOString()),
+    };
+
+    await emailjs.send(EMAILJS_SERVICE, EMAILJS_TEMPLATE, templateParams, EMAILJS_KEY);
   };
 
   const mockProtocol = {
