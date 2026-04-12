@@ -3,6 +3,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Ticket, PlusCircle, Settings, LogOut,
   CalendarCheck, MessageSquare, PartyPopper,
+  Monitor, Users, FileText,
 } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { ADMINS } from '../utils/helpers';
@@ -25,6 +26,9 @@ const navItems: NavItem[] = [
   { to: '/events',       label: 'Eventy',          icon: <PartyPopper size={16} /> },
   { to: '/calendar',     label: 'Kalendarz',       icon: <CalendarCheck size={16} /> },
   { to: '/chat',         label: 'Chat',            icon: <MessageSquare size={16} /> },
+  { to: '/equipment',    label: 'Sprzęt IT',       icon: <Monitor size={16} /> },
+  { to: '/people',       label: 'Pracownicy',      icon: <Users size={16} /> },
+  { to: '/protocols',    label: 'Protokoły',       icon: <FileText size={16} /> },
   { to: '/settings',     label: 'Ustawienia',      icon: <Settings size={16} /> },
 ];
 

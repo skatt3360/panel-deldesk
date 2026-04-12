@@ -12,6 +12,10 @@ import CalendarPage from './pages/Calendar';
 import Events from './pages/Events';
 import Chat from './pages/Chat';
 import Settings from './pages/Settings';
+import EquipmentPage from './pages/Equipment';
+import PeoplePage from './pages/People';
+import ProtocolsPage from './pages/Protocols';
+import NewProtocol from './pages/NewProtocol';
 
 const AuthenticatedApp: React.FC = () => {
   const googleAccessToken = useAuthStore((s) => s.googleAccessToken);
@@ -46,6 +50,10 @@ const AuthenticatedApp: React.FC = () => {
           <Route path="calendar" element={<CalendarPage />} />
           <Route path="chat" element={<Chat />} />
           <Route path="settings" element={<Settings />} />
+          <Route path="equipment" element={<EquipmentPage />} />
+          <Route path="people" element={<PeoplePage />} />
+          <Route path="protocols" element={<ProtocolsPage />} />
+          <Route path="protocols/new" element={<NewProtocol />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>

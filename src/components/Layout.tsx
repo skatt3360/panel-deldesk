@@ -4,14 +4,20 @@ import Sidebar from './Sidebar';
 import Header from './Header';
 import { useTicketStore } from '../store/ticketStore';
 import { useCalendarStore } from '../store/calendarStore';
+import { useEquipmentStore } from '../store/equipmentStore';
+import { usePeopleStore } from '../store/peopleStore';
+import { useProtocolStore } from '../store/protocolStore';
 import CdvLogo from './CdvLogo';
 
 const Layout: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const ticketsReady = useTicketStore((s) => s.initialized);
   const calendarReady = useCalendarStore((s) => s.initialized);
+  const equipmentReady = useEquipmentStore((s) => s.initialized);
+  const peopleReady = usePeopleStore((s) => s.initialized);
+  const protocolsReady = useProtocolStore((s) => s.initialized);
 
-  if (!ticketsReady || !calendarReady) {
+  if (!ticketsReady || !calendarReady || !equipmentReady || !peopleReady || !protocolsReady) {
     return (
       <div className="flex h-screen items-center justify-center app-bg">
         <div className="text-center animate-fade-in">

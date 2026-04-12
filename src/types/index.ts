@@ -137,6 +137,78 @@ export interface ChangelogEntry {
   changes: { type: 'feat' | 'fix' | 'improve'; text: string }[];
 }
 
+// ─── Equipment ──────────────────────────────────────────────────────────────
+
+export type EquipmentType =
+  | 'laptop' | 'desktop' | 'monitor' | 'printer' | 'scanner'
+  | 'phone' | 'tablet' | 'keyboard' | 'mouse' | 'headset'
+  | 'projector' | 'camera' | 'server' | 'switch' | 'router'
+  | 'ups' | 'dock' | 'cable' | 'other';
+
+export type EquipmentStatus = 'available' | 'assigned' | 'service' | 'retired';
+
+export interface Equipment {
+  id: string;
+  type: EquipmentType;
+  brand: string;
+  model: string;
+  serialNumber: string;
+  inventoryNumber: string;
+  status: EquipmentStatus;
+  assignedToId?: string;
+  assignedAt?: string;
+  purchasedAt?: string;
+  warrantyUntil?: string;
+  location?: string;
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// ─── People / Org ────────────────────────────────────────────────────────────
+
+export interface Person {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string;
+  position: string;
+  department: string;
+  supervisorId?: string;
+  room?: string;
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Department {
+  id: string;
+  name: string;
+  headId?: string;
+  createdAt: string;
+}
+
+// ─── Handover Protocol ───────────────────────────────────────────────────────
+
+export type ProtocolStatus = 'active' | 'returned' | 'cancelled';
+
+export interface HandoverProtocol {
+  id: string;
+  personId: string;
+  equipmentIds: string[];
+  issuedBy: string;
+  issuedByName: string;
+  issuedAt: string;
+  expectedReturnDate?: string;
+  returnedAt?: string;
+  status: ProtocolStatus;
+  notes?: string;
+  supervisorId?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface AppSettings {
   organizationName: string;
   adminEmail: string;
