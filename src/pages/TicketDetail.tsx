@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, Send, User, Tag, Clock, Calendar,
@@ -90,8 +90,24 @@ const TicketDetail: React.FC = () => {
   const canAdmin = isAdmin(user?.email);
 
   const ticket = tickets.find((t) => t.id === id);
+  const initialized = useTicketStore((s) => s.initialized);
+  const [waitedLong, setWaitedLong] = useState(false);
+
+  useEffect(() => {
+    if (ticket) return;
+    const t = setTimeout(() => setWaitedLong(true), 3000);
+    return () => clearTimeout(t);
+  }, [ticket]);
 
   if (!ticket) {
+    if (!initialized || !waitedLong) {
+      return (
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 0', gap: 16 }}>
+          <div style={{ width: 36, height: 36, border: '3px solid rgba(255,105,0,0.3)', borderTopColor: '#FF6900', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 13 }}>Ładowanie zgłoszenia…</p>
+        </div>
+      );
+    }
     return (
       <div style={{ maxWidth: 480, margin: '80px auto', textAlign: 'center' }}>
         <div style={{ width: 56, height: 56, borderRadius: 16, background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
