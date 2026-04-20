@@ -1,11 +1,13 @@
 import React, { useState, useMemo } from 'react';
 import {
   Users, Plus, Search, X, Edit2, Trash2, Mail, Phone, Building2,
-  ChevronDown, ChevronUp, User,
+  ChevronDown, ChevronUp, User, Crown, MapPin, StickyNote,
+  UserCheck,
 } from 'lucide-react';
 import { usePeopleStore } from '../store/peopleStore';
 import { useEquipmentStore } from '../store/equipmentStore';
 import { Person, Department } from '../types';
+import { CDV_ROOMS } from '../utils/helpers';
 
 // ─── Dept color palette ───────────────────────────────────────────────────────
 const DEPT_COLORS = [
@@ -24,10 +26,12 @@ const Avatar: React.FC<{ person: Person; size?: number }> = ({ person, size = 42
   const initials = `${person.firstName[0] ?? ''}${person.lastName[0] ?? ''}`.toUpperCase();
   return (
     <div style={{
-      width: size, height: size, borderRadius: '50%',
-      background: `${color}22`, border: `2px solid ${color}55`,
+      width: size, height: size, borderRadius: size * 0.28,
+      background: `linear-gradient(135deg, ${color}30, ${color}18)`,
+      border: `2px solid ${color}45`,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       fontSize: size * 0.35, fontWeight: 800, color, flexShrink: 0,
+      boxShadow: `0 4px 12px ${color}20`,
     }}>
       {initials}
     </div>
@@ -45,11 +49,12 @@ interface PersonFormData {
   supervisorId: string;
   room: string;
   notes: string;
+  isManager: boolean;
 }
 
 const emptyPersonForm = (): PersonFormData => ({
   firstName: '', lastName: '', email: '', phone: '',
-  position: '', department: '', supervisorId: '', room: '', notes: '',
+  position: '', department: '', supervisorId: '', room: '', notes: '', isManager: false,
 });
 
 interface PersonFormProps {
@@ -62,33 +67,62 @@ interface PersonFormProps {
   onAddDept: (name: string) => Promise<string>;
 }
 
+const inp: React.CSSProperties = {
+  background: 'rgba(255,255,255,0.06)',
+  border: '1px solid rgba(255,255,255,0.12)',
+  borderRadius: 10,
+  padding: '9px 13px',
+  color: '#fff',
+  fontSize: 13,
+  width: '100%',
+  outline: 'none',
+};
+const lbl: React.CSSProperties = {
+  fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.4)',
+  marginBottom: 5, display: 'block', textTransform: 'uppercase', letterSpacing: '0.08em',
+};
+
 const PersonForm: React.FC<PersonFormProps> = ({ initial, departments, people, editId, onSave, onCancel, onAddDept }) => {
   const [form, setForm] = useState<PersonFormData>(initial ?? emptyPersonForm());
   const [newDept, setNewDept] = useState('');
   const [addingDept, setAddingDept] = useState(false);
   const [formError, setFormError] = useState('');
 
-  const set_ = (k: keyof PersonFormData, v: string) => setForm((f) => ({ ...f, [k]: v }));
+  const set_ = (k: keyof PersonFormData, v: string | boolean) => setForm((f) => ({ ...f, [k]: v }));
 
-  const inp: React.CSSProperties = {
-    background: 'rgba(255,255,255,0.05)',
-    border: '1px solid rgba(255,255,255,0.1)',
-    borderRadius: 8,
-    padding: '8px 12px',
-    color: '#fff',
-    fontSize: 13,
-    width: '100%',
-    outline: 'none',
-  };
-  const lbl: React.CSSProperties = {
-    fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.45)',
-    marginBottom: 4, display: 'block', textTransform: 'uppercase', letterSpacing: '0.06em',
-  };
-
-  const supervisorOptions = people.filter((p) => p.id !== editId);
+  // Only managers can be selected as supervisor
+  const managerOptions = people.filter((p) => p.id !== editId && p.isManager);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+
+      {/* Manager toggle */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: form.isManager ? 'rgba(255,105,0,0.08)' : 'rgba(255,255,255,0.03)', border: `1px solid ${form.isManager ? 'rgba(255,105,0,0.3)' : 'rgba(255,255,255,0.08)'}`, borderRadius: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <Crown size={15} style={{ color: form.isManager ? '#FF6900' : 'rgba(255,255,255,0.3)' }} />
+          <div>
+            <p style={{ fontSize: 13, fontWeight: 700, color: form.isManager ? '#FF6900' : 'rgba(255,255,255,0.7)', margin: 0 }}>Kierownik działu</p>
+            <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', margin: 0 }}>Tylko kierownicy mogą być wybrani jako przełożeni</p>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={() => set_('isManager', !form.isManager)}
+          style={{
+            position: 'relative', width: 44, height: 24, borderRadius: 99, border: 'none',
+            cursor: 'pointer', flexShrink: 0,
+            background: form.isManager ? '#FF6900' : 'rgba(255,255,255,0.12)',
+            transition: 'background 0.2s',
+          }}
+        >
+          <span style={{
+            position: 'absolute', top: 3, left: form.isManager ? 23 : 3,
+            width: 18, height: 18, borderRadius: '50%', background: '#fff',
+            transition: 'left 0.2s', boxShadow: '0 1px 4px rgba(0,0,0,0.3)',
+          }} />
+        </button>
+      </div>
+
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
         <div>
           <label style={lbl}>Imię *</label>
@@ -128,32 +162,24 @@ const PersonForm: React.FC<PersonFormProps> = ({ initial, departments, people, e
             <input value={form.department} onChange={(e) => set_('department', e.target.value)} style={{ ...inp, flex: 1 }} placeholder="Wpisz nazwę działu" />
           )}
           {!addingDept && (
-            <button onClick={() => setAddingDept(true)} style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.12)', background: 'transparent', color: '#FF6900', fontSize: 12, cursor: 'pointer', whiteSpace: 'nowrap', fontWeight: 600 }}>
+            <button onClick={() => setAddingDept(true)} style={{ padding: '9px 13px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.12)', background: 'transparent', color: '#FF6900', fontSize: 12, cursor: 'pointer', whiteSpace: 'nowrap', fontWeight: 600 }}>
               + Nowy
             </button>
           )}
         </div>
         {addingDept && (
           <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-            <input
-              value={newDept}
-              onChange={(e) => setNewDept(e.target.value)}
-              style={{ ...inp, flex: 1 }}
-              placeholder="Nazwa nowego działu"
-            />
+            <input value={newDept} onChange={(e) => setNewDept(e.target.value)} style={{ ...inp, flex: 1 }} placeholder="Nazwa nowego działu" />
             <button
               onClick={async () => {
                 if (!newDept.trim()) return;
                 await onAddDept(newDept.trim());
                 set_('department', newDept.trim());
-                setNewDept('');
-                setAddingDept(false);
+                setNewDept(''); setAddingDept(false);
               }}
-              style={{ padding: '8px 14px', borderRadius: 8, border: 'none', background: '#FF6900', color: '#fff', fontSize: 12, cursor: 'pointer', fontWeight: 700 }}
-            >
-              Dodaj
-            </button>
-            <button onClick={() => setAddingDept(false)} style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.1)', background: 'transparent', color: 'rgba(255,255,255,0.5)', fontSize: 12, cursor: 'pointer' }}>
+              style={{ padding: '9px 14px', borderRadius: 10, border: 'none', background: '#FF6900', color: '#fff', fontSize: 12, cursor: 'pointer', fontWeight: 700 }}
+            >Dodaj</button>
+            <button onClick={() => setAddingDept(false)} style={{ padding: '9px 10px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.1)', background: 'transparent', color: 'rgba(255,255,255,0.4)', fontSize: 12, cursor: 'pointer' }}>
               <X size={13} />
             </button>
           </div>
@@ -161,10 +187,17 @@ const PersonForm: React.FC<PersonFormProps> = ({ initial, departments, people, e
       </div>
 
       <div>
-        <label style={lbl}>Przełożony</label>
-        <select value={form.supervisorId} onChange={(e) => set_('supervisorId', e.target.value)} style={inp}>
-          <option value="">— brak / nie dotyczy —</option>
-          {supervisorOptions.map((p) => (
+        <label style={lbl}>
+          Przełożony
+          {managerOptions.length === 0 && (
+            <span style={{ color: 'rgba(255,165,0,0.7)', fontWeight: 500, marginLeft: 6, textTransform: 'none' }}>
+              — brak zdefiniowanych kierowników
+            </span>
+          )}
+        </label>
+        <select value={form.supervisorId} onChange={(e) => set_('supervisorId', e.target.value)} style={inp} disabled={managerOptions.length === 0}>
+          <option value="">— brak przełożonego —</option>
+          {managerOptions.map((p) => (
             <option key={p.id} value={p.id}>{p.firstName} {p.lastName} — {p.position}</option>
           ))}
         </select>
@@ -173,9 +206,18 @@ const PersonForm: React.FC<PersonFormProps> = ({ initial, departments, people, e
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
         <div>
           <label style={lbl}>Sala / Pokój</label>
-          <input value={form.room} onChange={(e) => set_('room', e.target.value)} style={inp} placeholder="np. 204, Budynek A" />
+          <input
+            list="cdv-rooms-people"
+            value={form.room}
+            onChange={(e) => set_('room', e.target.value)}
+            style={inp}
+            placeholder="np. 204, Budynek A"
+          />
+          <datalist id="cdv-rooms-people">
+            {CDV_ROOMS.map((r) => <option key={r} value={r} />)}
+          </datalist>
         </div>
-        <div style={{ /* spacer */ }} />
+        <div />
       </div>
 
       <div>
@@ -188,8 +230,8 @@ const PersonForm: React.FC<PersonFormProps> = ({ initial, departments, people, e
           {formError}
         </div>
       )}
-      <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', paddingTop: 8, borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-        <button onClick={onCancel} style={{ padding: '8px 18px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.12)', background: 'transparent', color: 'rgba(255,255,255,0.6)', fontSize: 13, cursor: 'pointer', fontWeight: 600 }}>
+      <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', paddingTop: 8, borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+        <button onClick={onCancel} style={{ padding: '9px 18px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.12)', background: 'transparent', color: 'rgba(255,255,255,0.6)', fontSize: 13, cursor: 'pointer', fontWeight: 600 }}>
           Anuluj
         </button>
         <button
@@ -201,13 +243,10 @@ const PersonForm: React.FC<PersonFormProps> = ({ initial, departments, people, e
             if (!form.email.trim()) missing.push('Email');
             if (!form.position.trim()) missing.push('Stanowisko');
             if (!form.department.trim()) missing.push('Dział');
-            if (missing.length > 0) {
-              setFormError(`Wypełnij wymagane pola: ${missing.join(', ')}`);
-              return;
-            }
+            if (missing.length > 0) { setFormError(`Wypełnij wymagane pola: ${missing.join(', ')}`); return; }
             onSave(form);
           }}
-          style={{ padding: '8px 22px', borderRadius: 8, border: 'none', background: '#FF6900', color: '#fff', fontSize: 13, cursor: 'pointer', fontWeight: 700 }}
+          style={{ padding: '9px 22px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #FF6900, #E85D00)', color: '#fff', fontSize: 13, cursor: 'pointer', fontWeight: 700, boxShadow: '0 4px 12px rgba(255,105,0,0.3)' }}
         >
           Zapisz
         </button>
@@ -231,74 +270,120 @@ const PersonCard: React.FC<PersonCardProps> = ({ person, people, equipmentCount,
   const color = deptColor(person.department);
 
   return (
-    <div style={{
-      background: 'rgba(255,255,255,0.04)',
-      border: '1px solid rgba(255,255,255,0.08)',
-      borderRadius: 14, padding: 18,
-      display: 'flex', flexDirection: 'column', gap: 12,
-      transition: 'border-color 0.15s',
-    }}
-      onMouseEnter={(e) => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.14)')}
-      onMouseLeave={(e) => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)')}
+    <div
+      style={{
+        background: 'rgba(255,255,255,0.04)',
+        border: `1px solid ${person.isManager ? 'rgba(255,105,0,0.2)' : 'rgba(255,255,255,0.08)'}`,
+        borderRadius: 16,
+        display: 'flex', flexDirection: 'column',
+        overflow: 'hidden',
+        transition: 'border-color 0.15s, transform 0.15s, box-shadow 0.15s',
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.borderColor = person.isManager ? 'rgba(255,105,0,0.4)' : 'rgba(255,255,255,0.16)';
+        e.currentTarget.style.transform = 'translateY(-2px)';
+        e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.2)';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.borderColor = person.isManager ? 'rgba(255,105,0,0.2)' : 'rgba(255,255,255,0.08)';
+        e.currentTarget.style.transform = 'none';
+        e.currentTarget.style.boxShadow = 'none';
+      }}
     >
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
-        <Avatar person={person} size={44} />
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 14.5, fontWeight: 700, color: '#fff', lineHeight: 1.3 }}>
-            {person.firstName} {person.lastName}
-          </div>
-          <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', marginTop: 2 }}>{person.position}</div>
-          <span style={{ display: 'inline-block', marginTop: 5, padding: '2px 8px', borderRadius: 12, fontSize: 10.5, fontWeight: 700, background: `${color}18`, color, border: `1px solid ${color}33` }}>
-            {person.department}
-          </span>
-        </div>
-        <div style={{ display: 'flex', gap: 5, flexShrink: 0 }}>
-          <button onClick={onEdit} style={{ padding: 6, borderRadius: 7, border: '1px solid rgba(255,255,255,0.1)', background: 'transparent', color: 'rgba(255,255,255,0.45)', cursor: 'pointer' }}>
-            <Edit2 size={12} />
-          </button>
-          {deleteConfirm ? (
-            <div style={{ display: 'flex', gap: 4 }}>
-              <button onClick={onDelete} style={{ padding: '4px 8px', borderRadius: 7, border: 'none', background: '#ef4444', color: '#fff', fontSize: 10.5, fontWeight: 700, cursor: 'pointer' }}>Usuń</button>
-              <button onClick={() => setDeleteConfirm(false)} style={{ padding: '4px 6px', borderRadius: 7, border: '1px solid rgba(255,255,255,0.1)', background: 'transparent', color: 'rgba(255,255,255,0.45)', fontSize: 10.5, cursor: 'pointer' }}>Nie</button>
+      {/* Color accent strip */}
+      <div style={{ height: 4, background: `linear-gradient(90deg, ${color}cc, ${color}44)` }} />
+
+      <div style={{ padding: '16px 16px 14px', display: 'flex', flexDirection: 'column', gap: 12, flex: 1 }}>
+        {/* Top row: avatar + name + actions */}
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+          <Avatar person={person} size={46} />
+
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ fontSize: 14.5, fontWeight: 800, color: '#fff', lineHeight: 1.2 }}>
+                {person.firstName} {person.lastName}
+              </span>
+              {person.isManager && (
+                <span title="Kierownik działu" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 18, height: 18, borderRadius: 6, background: 'rgba(255,105,0,0.2)', border: '1px solid rgba(255,105,0,0.35)', flexShrink: 0 }}>
+                  <Crown size={10} style={{ color: '#FF6900' }} />
+                </span>
+              )}
             </div>
-          ) : (
-            <button onClick={() => setDeleteConfirm(true)} style={{ padding: 6, borderRadius: 7, border: '1px solid rgba(255,255,255,0.1)', background: 'transparent', color: 'rgba(255,255,255,0.45)', cursor: 'pointer' }}>
-              <Trash2 size={12} />
+            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', marginTop: 2, lineHeight: 1.3 }}>{person.position}</div>
+            <div style={{ marginTop: 6 }}>
+              <span style={{ display: 'inline-block', padding: '2px 8px', borderRadius: 20, fontSize: 10.5, fontWeight: 700, background: `${color}18`, color, border: `1px solid ${color}33` }}>
+                {person.department}
+              </span>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
+            <button
+              onClick={onEdit}
+              style={{ padding: 7, borderRadius: 8, border: '1px solid rgba(255,255,255,0.1)', background: 'transparent', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', transition: 'background 0.15s, color 0.15s' }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = 'rgba(255,255,255,0.8)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(255,255,255,0.4)'; }}
+            >
+              <Edit2 size={12} />
             </button>
+            {deleteConfirm ? (
+              <div style={{ display: 'flex', gap: 3 }}>
+                <button onClick={onDelete} style={{ padding: '5px 8px', borderRadius: 8, border: 'none', background: '#ef4444', color: '#fff', fontSize: 10.5, fontWeight: 700, cursor: 'pointer' }}>Usuń</button>
+                <button onClick={() => setDeleteConfirm(false)} style={{ padding: '5px 7px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.1)', background: 'transparent', color: 'rgba(255,255,255,0.45)', fontSize: 10.5, cursor: 'pointer' }}>Nie</button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setDeleteConfirm(true)}
+                style={{ padding: 7, borderRadius: 8, border: '1px solid rgba(255,255,255,0.1)', background: 'transparent', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', transition: 'background 0.15s, color 0.15s' }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(239,68,68,0.1)'; e.currentTarget.style.color = '#f87171'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(255,255,255,0.4)'; }}
+              >
+                <Trash2 size={12} />
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Contact & info */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 5, borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 10 }}>
+          {person.email && (
+            <a href={`mailto:${person.email}`} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'rgba(255,255,255,0.6)', textDecoration: 'none' }}>
+              <Mail size={11} style={{ color: 'rgba(255,255,255,0.3)', flexShrink: 0 }} />
+              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{person.email}</span>
+            </a>
+          )}
+          {person.phone && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'rgba(255,255,255,0.6)' }}>
+              <Phone size={11} style={{ color: 'rgba(255,255,255,0.3)', flexShrink: 0 }} />{person.phone}
+            </div>
+          )}
+          {person.room && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'rgba(255,255,255,0.6)' }}>
+              <MapPin size={11} style={{ color: 'rgba(255,255,255,0.3)', flexShrink: 0 }} />{person.room}
+            </div>
+          )}
+          {supervisor && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>
+              <UserCheck size={11} style={{ color: 'rgba(255,255,255,0.3)', flexShrink: 0 }} />
+              <span>Przełożony: <span style={{ color: 'rgba(255,255,255,0.75)', fontWeight: 600 }}>{supervisor.firstName} {supervisor.lastName}</span></span>
+            </div>
+          )}
+          {person.notes && (
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 12, color: 'rgba(255,255,255,0.4)' }}>
+              <StickyNote size={11} style={{ color: 'rgba(255,255,255,0.25)', flexShrink: 0, marginTop: 1 }} />
+              <span style={{ overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{person.notes}</span>
+            </div>
           )}
         </div>
-      </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 5, borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 12 }}>
-        {person.email && (
-          <a href={`mailto:${person.email}`} style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 12, color: 'rgba(255,255,255,0.5)', textDecoration: 'none' }}>
-            <Mail size={12} style={{ color: 'rgba(255,255,255,0.25)' }} />{person.email}
-          </a>
-        )}
-        {person.phone && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>
-            <Phone size={12} style={{ color: 'rgba(255,255,255,0.25)' }} />{person.phone}
-          </div>
-        )}
-        {person.room && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>
-            <Building2 size={12} style={{ color: 'rgba(255,255,255,0.25)' }} />{person.room}
-          </div>
-        )}
-        {supervisor && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>
-            <User size={12} style={{ color: 'rgba(255,255,255,0.25)' }} />
-            Przełożony: {supervisor.firstName} {supervisor.lastName}
+        {/* Equipment badge */}
+        {equipmentCount > 0 && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '5px 10px', background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.15)', borderRadius: 8 }}>
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#60a5fa', flexShrink: 0 }} />
+            <span style={{ fontSize: 11.5, color: '#93c5fd', fontWeight: 600 }}>{equipmentCount} szt. przydzielonego sprzętu</span>
           </div>
         )}
       </div>
-
-      {equipmentCount > 0 && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '6px 10px', background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.15)', borderRadius: 8 }}>
-          <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#60a5fa', flexShrink: 0 }} />
-          <span style={{ fontSize: 12, color: '#60a5fa', fontWeight: 600 }}>{equipmentCount} szt. przydzielonego sprzętu</span>
-        </div>
-      )}
     </div>
   );
 };
@@ -311,31 +396,35 @@ const DeptManager: React.FC = () => {
   const [editName, setEditName] = useState('');
   const [expanded, setExpanded] = useState(false);
 
-  const inp: React.CSSProperties = {
-    background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
-    borderRadius: 8, padding: '7px 11px', color: '#fff', fontSize: 13, outline: 'none',
-  };
-
   return (
-    <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 14, overflow: 'hidden', marginTop: 24 }}>
+    <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 16, overflow: 'hidden', marginTop: 24 }}>
       <button
         onClick={() => setExpanded((v) => !v)}
         style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 20px', background: 'none', border: 'none', cursor: 'pointer', color: '#fff' }}
       >
-        <span style={{ fontSize: 13, fontWeight: 700 }}>Zarządzanie działami ({departments.length})</span>
-        {expanded ? <ChevronUp size={15} style={{ color: 'rgba(255,255,255,0.4)' }} /> : <ChevronDown size={15} style={{ color: 'rgba(255,255,255,0.4)' }} />}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <Building2 size={15} style={{ color: 'rgba(255,255,255,0.4)' }} />
+          <span style={{ fontSize: 13, fontWeight: 700 }}>Zarządzanie działami ({departments.length})</span>
+        </div>
+        {expanded
+          ? <ChevronUp size={15} style={{ color: 'rgba(255,255,255,0.35)' }} />
+          : <ChevronDown size={15} style={{ color: 'rgba(255,255,255,0.35)' }} />}
       </button>
 
       {expanded && (
         <div style={{ padding: '0 20px 20px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
           <div style={{ display: 'flex', gap: 8, marginTop: 16, marginBottom: 16 }}>
-            <input value={newName} onChange={(e) => setNewName(e.target.value)} style={{ ...inp, flex: 1 }} placeholder="Nazwa nowego działu" onKeyDown={(e) => { if (e.key === 'Enter' && newName.trim()) { addDepartment(newName.trim()); setNewName(''); } }} />
+            <input
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              style={{ ...inp, flex: 1 }}
+              placeholder="Nazwa nowego działu"
+              onKeyDown={(e) => { if (e.key === 'Enter' && newName.trim()) { addDepartment(newName.trim()); setNewName(''); } }}
+            />
             <button
               onClick={() => { if (newName.trim()) { addDepartment(newName.trim()); setNewName(''); } }}
-              style={{ padding: '7px 16px', borderRadius: 8, border: 'none', background: '#FF6900', color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}
-            >
-              + Dodaj
-            </button>
+              style={{ padding: '9px 16px', borderRadius: 10, border: 'none', background: '#FF6900', color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}
+            >+ Dodaj</button>
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
             {departments.map((d) => (
@@ -349,8 +438,8 @@ const DeptManager: React.FC = () => {
                 ) : (
                   <>
                     <span style={{ fontSize: 12, fontWeight: 600, color: deptColor(d.name) }}>{d.name}</span>
-                    <button onClick={() => { setEditId(d.id); setEditName(d.name); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.3)', padding: 0, lineHeight: 1 }}><Edit2 size={10} /></button>
-                    <button onClick={() => deleteDepartment(d.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.3)', padding: 0, lineHeight: 1 }}><X size={10} /></button>
+                    <button onClick={() => { setEditId(d.id); setEditName(d.name); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.3)', padding: 0 }}><Edit2 size={10} /></button>
+                    <button onClick={() => deleteDepartment(d.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.3)', padding: 0 }}><X size={10} /></button>
                   </>
                 )}
               </div>
@@ -369,6 +458,7 @@ const PeoplePage: React.FC = () => {
 
   const [search, setSearch] = useState('');
   const [filterDept, setFilterDept] = useState<string>('all');
+  const [filterRole, setFilterRole] = useState<'all' | 'managers' | 'staff'>('all');
   const [showForm, setShowForm] = useState(false);
   const [editPerson, setEditPerson] = useState<Person | null>(null);
   const [saveError, setSaveError] = useState('');
@@ -379,6 +469,8 @@ const PeoplePage: React.FC = () => {
   const filtered = useMemo(() => {
     return people.filter((p) => {
       if (filterDept !== 'all' && p.department !== filterDept) return false;
+      if (filterRole === 'managers' && !p.isManager) return false;
+      if (filterRole === 'staff' && p.isManager) return false;
       if (search) {
         const q = search.toLowerCase();
         return (
@@ -391,23 +483,17 @@ const PeoplePage: React.FC = () => {
       }
       return true;
     });
-  }, [people, filterDept, search]);
+  }, [people, filterDept, filterRole, search]);
 
-  const cardStyle: React.CSSProperties = {
-    background: 'rgba(255,255,255,0.04)',
-    border: '1px solid rgba(255,255,255,0.08)',
-    borderRadius: 14,
-  };
-
-  const handleSave = async (form: { firstName: string; lastName: string; email: string; phone: string; position: string; department: string; supervisorId: string; room: string; notes: string }) => {
+  const handleSave = async (form: PersonFormData) => {
     setSaveError('');
-    // Firebase RTDB rejects objects with undefined values — only include non-empty optional fields
     const data: Omit<Person, 'id' | 'createdAt' | 'updatedAt'> = {
       firstName: form.firstName,
       lastName: form.lastName,
       email: form.email,
       position: form.position,
       department: form.department,
+      isManager: form.isManager,
       ...(form.phone.trim() ? { phone: form.phone.trim() } : {}),
       ...(form.supervisorId ? { supervisorId: form.supervisorId } : {}),
       ...(form.room.trim() ? { room: form.room.trim() } : {}),
@@ -433,30 +519,63 @@ const PeoplePage: React.FC = () => {
     return departments.filter((d) => s.has(d.name));
   }, [people, departments]);
 
+  const managerCount = people.filter((p) => p.isManager).length;
+
   return (
     <div style={{ maxWidth: 1200, margin: '0 auto' }}>
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 24, gap: 16 }}>
         <div>
           <h1 style={{ color: '#fff', fontSize: 22, fontWeight: 800, margin: 0, letterSpacing: '-0.02em' }}>Baza Pracowników</h1>
-          <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 13, marginTop: 3 }}>{people.length} pracowników</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 6 }}>
+            <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 13, margin: 0 }}>{people.length} pracowników</p>
+            {managerCount > 0 && (
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11.5, fontWeight: 600, color: '#FF6900', background: 'rgba(255,105,0,0.1)', border: '1px solid rgba(255,105,0,0.2)', borderRadius: 20, padding: '2px 10px' }}>
+                <Crown size={11} /> {managerCount} kierownik{managerCount > 1 ? 'ów' : 'a'}
+              </span>
+            )}
+          </div>
         </div>
         <button
           onClick={() => { setShowForm(true); setEditPerson(null); }}
-          style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 10, border: 'none', background: '#FF6900', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}
+          style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '10px 20px', borderRadius: 12, border: 'none', background: 'linear-gradient(135deg, #FF6900, #E85D00)', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 16px rgba(255,105,0,0.3)', flexShrink: 0 }}
         >
           <Plus size={15} /> Dodaj osobę
         </button>
       </div>
 
-      {/* Filters */}
-      <div style={{ display: 'flex', gap: 12, marginBottom: 20, alignItems: 'center', flexWrap: 'wrap' }}>
+      {/* Filters row */}
+      <div style={{ display: 'flex', gap: 10, marginBottom: 20, alignItems: 'center', flexWrap: 'wrap' }}>
+        {/* Role filter */}
+        <div style={{ display: 'flex', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: 3, gap: 2 }}>
+          {([
+            { value: 'all', label: 'Wszyscy' },
+            { value: 'managers', label: 'Kierownicy', icon: <Crown size={11} /> },
+            { value: 'staff', label: 'Pracownicy', icon: <User size={11} /> },
+          ] as { value: 'all' | 'managers' | 'staff'; label: string; icon?: React.ReactNode }[]).map(({ value, label, icon }) => (
+            <button
+              key={value}
+              onClick={() => setFilterRole(value)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 5,
+                padding: '5px 12px', borderRadius: 8, border: 'none',
+                background: filterRole === value ? 'rgba(255,255,255,0.12)' : 'transparent',
+                color: filterRole === value ? '#fff' : 'rgba(255,255,255,0.45)',
+                fontSize: 12, fontWeight: 600, cursor: 'pointer', transition: 'all 0.15s',
+              }}
+            >
+              {icon}{label}
+            </button>
+          ))}
+        </div>
+
+        {/* Dept filter pills */}
         <div style={{ display: 'flex', gap: 6, flex: 1, flexWrap: 'wrap' }}>
           <button
             onClick={() => setFilterDept('all')}
-            style={{ padding: '6px 14px', borderRadius: 8, border: '1px solid', borderColor: filterDept === 'all' ? '#FF6900' : 'rgba(255,255,255,0.1)', background: filterDept === 'all' ? 'rgba(255,105,0,0.12)' : 'transparent', color: filterDept === 'all' ? '#FF6900' : 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}
+            style={{ padding: '6px 13px', borderRadius: 8, border: `1px solid ${filterDept === 'all' ? '#FF6900' : 'rgba(255,255,255,0.1)'}`, background: filterDept === 'all' ? 'rgba(255,105,0,0.12)' : 'transparent', color: filterDept === 'all' ? '#FF6900' : 'rgba(255,255,255,0.45)', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}
           >
-            Wszyscy ({people.length})
+            Wszystkie działy
           </button>
           {usedDepts.map((d) => {
             const cnt = people.filter((p) => p.department === d.name).length;
@@ -465,28 +584,42 @@ const PeoplePage: React.FC = () => {
               <button
                 key={d.id}
                 onClick={() => setFilterDept(d.name)}
-                style={{ padding: '6px 12px', borderRadius: 8, border: '1px solid', borderColor: filterDept === d.name ? color : 'rgba(255,255,255,0.1)', background: filterDept === d.name ? `${color}18` : 'transparent', color: filterDept === d.name ? color : 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}
+                style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '6px 12px', borderRadius: 8, border: `1px solid ${filterDept === d.name ? color : 'rgba(255,255,255,0.1)'}`, background: filterDept === d.name ? `${color}18` : 'transparent', color: filterDept === d.name ? color : 'rgba(255,255,255,0.45)', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}
               >
-                {d.name} ({cnt})
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: color, flexShrink: 0 }} />
+                {d.name} <span style={{ opacity: 0.6 }}>({cnt})</span>
               </button>
             );
           })}
         </div>
+
+        {/* Search */}
         <div style={{ position: 'relative', minWidth: 220 }}>
-          <Search size={13} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.3)' }} />
-          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Szukaj pracownika..." style={{ paddingLeft: 30, paddingRight: search ? 30 : 12, paddingTop: 8, paddingBottom: 8, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, width: '100%', outline: 'none' }} />
-          {search && <button onClick={() => setSearch('')} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.4)', padding: 0 }}><X size={13} /></button>}
+          <Search size={13} style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.3)' }} />
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Szukaj pracownika..."
+            style={{ ...inp, paddingLeft: 32, paddingRight: search ? 30 : 12, paddingTop: 9, paddingBottom: 9 }}
+          />
+          {search && (
+            <button onClick={() => setSearch('')} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.4)', padding: 0 }}>
+              <X size={13} />
+            </button>
+          )}
         </div>
       </div>
 
       {/* Add/Edit Form */}
       {(showForm || editPerson) && (
-        <div style={{ ...cardStyle, padding: 24, marginBottom: 20 }}>
+        <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 18, padding: 24, marginBottom: 20 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
             <h3 style={{ color: '#fff', fontSize: 15, fontWeight: 700, margin: 0 }}>
               {editPerson ? `Edytuj — ${editPerson.firstName} ${editPerson.lastName}` : 'Nowy pracownik'}
             </h3>
-            <button onClick={() => { setShowForm(false); setEditPerson(null); }} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', padding: 4 }}><X size={16} /></button>
+            <button onClick={() => { setShowForm(false); setEditPerson(null); }} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', padding: 4 }}>
+              <X size={16} />
+            </button>
           </div>
           {saveError && (
             <div style={{ marginBottom: 14, padding: '10px 14px', background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 10, fontSize: 13, color: '#fca5a5' }}>
@@ -495,15 +628,11 @@ const PeoplePage: React.FC = () => {
           )}
           <PersonForm
             initial={editPerson ? {
-              firstName: editPerson.firstName,
-              lastName: editPerson.lastName,
-              email: editPerson.email,
-              phone: editPerson.phone ?? '',
-              position: editPerson.position,
-              department: editPerson.department,
-              supervisorId: editPerson.supervisorId ?? '',
-              room: editPerson.room ?? '',
-              notes: editPerson.notes ?? '',
+              firstName: editPerson.firstName, lastName: editPerson.lastName,
+              email: editPerson.email, phone: editPerson.phone ?? '',
+              position: editPerson.position, department: editPerson.department,
+              supervisorId: editPerson.supervisorId ?? '', room: editPerson.room ?? '',
+              notes: editPerson.notes ?? '', isManager: editPerson.isManager ?? false,
             } : undefined}
             departments={departments}
             people={people}
@@ -517,12 +646,12 @@ const PeoplePage: React.FC = () => {
 
       {/* Grid */}
       {filtered.length === 0 ? (
-        <div style={{ ...cardStyle, padding: 48, textAlign: 'center' }}>
-          <Users size={32} style={{ color: 'rgba(255,255,255,0.15)', marginBottom: 12 }} />
+        <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 16, padding: 48, textAlign: 'center' }}>
+          <Users size={32} style={{ color: 'rgba(255,255,255,0.12)', marginBottom: 12 }} />
           <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: 14 }}>Brak pracowników spełniających kryteria</p>
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(290px, 1fr))', gap: 14 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 14 }}>
           {filtered.map((p) => (
             <PersonCard
               key={p.id}

@@ -22,7 +22,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   slaHoursCritical: 2,
   defaultAssignee: 'Marek Wiśniewski',
   emailNotifications: true,
-  darkMode: false,
+  darkMode: true,
 };
 
 /** Tickets stored as objects in Firebase (comments as keyed object, not array) */

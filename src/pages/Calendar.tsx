@@ -15,7 +15,7 @@ import { NewCalendarEventForm, CalendarEvent, CalendarEventType } from '../types
 import Modal from '../components/ui/Modal';
 import Button from '../components/ui/Button';
 import {
-  eventTypeLabel, eventTypeColor, ALL_EVENT_TYPES, formatDate, ADMINS,
+  eventTypeLabel, eventTypeColor, ALL_EVENT_TYPES, formatDate, ADMINS, CDV_ROOMS,
 } from '../utils/helpers';
 
 import 'react-big-calendar/lib/css/react-big-calendar.css';
@@ -420,11 +420,15 @@ const CalendarPage: React.FC = () => {
             </label>
             <input
               type="text"
+              list="cdv-rooms-cal"
               value={form.room}
               onChange={(e) => setField('room', e.target.value)}
               placeholder="np. Sala 204, Budynek A..."
               style={inputStyle}
             />
+            <datalist id="cdv-rooms-cal">
+              {CDV_ROOMS.map((r) => <option key={r} value={r} />)}
+            </datalist>
           </div>
 
           <div className="flex items-center gap-2.5">

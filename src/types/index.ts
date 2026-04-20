@@ -178,6 +178,7 @@ export interface Person {
   supervisorId?: string;
   room?: string;
   notes?: string;
+  isManager?: boolean;
   createdAt: string;
   updatedAt: string;
 }

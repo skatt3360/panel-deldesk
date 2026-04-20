@@ -4,7 +4,7 @@ import { Send, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { useTicketStore } from '../store/ticketStore';
 import { NewTicketForm, TicketCategory, TicketPriority } from '../types';
 import {
-  ALL_CATEGORIES, ALL_PRIORITIES, categoryLabel, priorityLabel,
+  ALL_CATEGORIES, ALL_PRIORITIES, categoryLabel, priorityLabel, CDV_ROOMS,
 } from '../utils/helpers';
 
 const INITIAL_FORM: NewTicketForm = {
@@ -161,11 +161,15 @@ const NewTicket: React.FC = () => {
               <label style={labelStyle}>Sala / Lokalizacja</label>
               <input
                 type="text"
+                list="cdv-rooms-list"
                 value={form.room ?? ''}
                 onChange={(e) => set('room', e.target.value)}
                 placeholder="np. Sala 204, Budynek A, Lab 302…"
                 style={inputStyle}
               />
+              <datalist id="cdv-rooms-list">
+                {CDV_ROOMS.map((r) => <option key={r} value={r} />)}
+              </datalist>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

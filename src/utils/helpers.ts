@@ -117,6 +117,21 @@ export const ADMINS = [
 // For assignment dropdowns
 export const TECHNICIANS = ['Szymon Karaszewski', 'Kacper Kubiak'];
 
+// CDV rooms for selection datalists
+export const CDV_ROOMS = [
+  'Sala 001', 'Sala 002', 'Sala 003', 'Sala 004', 'Sala 005',
+  'Sala 101', 'Sala 102', 'Sala 103', 'Sala 104', 'Sala 105',
+  'Sala 201', 'Sala 202', 'Sala 203', 'Sala 204', 'Sala 205',
+  'Sala 301', 'Sala 302', 'Sala 303', 'Sala 304', 'Sala 305',
+  'Lab 101', 'Lab 102', 'Lab 103', 'Lab 201', 'Lab 202',
+  'Aula A', 'Aula B', 'Aula C',
+  'Dziekanat', 'Rektorat', 'Sekretariat',
+  'Biblioteka', 'Czytelnia',
+  'Serwerownia', 'Dział IT',
+  'Budynek A', 'Budynek B', 'Budynek C',
+  'Korytarz parter', 'Korytarz 1 piętro', 'Korytarz 2 piętro',
+];
+
 export const ALL_STATUSES: TicketStatus[] = ['open', 'in-progress', 'pending', 'resolved', 'closed'];
 export const ALL_PRIORITIES: TicketPriority[] = ['low', 'medium', 'high', 'critical'];
 export const ALL_CATEGORIES: TicketCategory[] = ['Hardware', 'Software', 'Network', 'Access', 'Event', 'Other'];

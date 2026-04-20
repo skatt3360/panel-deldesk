@@ -3,9 +3,9 @@ import { ScrollText, X, Sparkles, Wrench, TrendingUp } from 'lucide-react';
 import { CHANGELOG } from '../data/changelog';
 
 const TYPE_CONFIG = {
-  feat:    { label: 'Nowość',    color: 'bg-cdv-gold/15 text-cdv-gold border border-cdv-gold/25',      icon: <Sparkles size={10} /> },
-  fix:     { label: 'Naprawa',   color: 'bg-red-500/15 text-red-300 border border-red-400/25',          icon: <Wrench size={10} /> },
-  improve: { label: 'Poprawa',   color: 'bg-blue-500/15 text-blue-300 border border-blue-400/25',       icon: <TrendingUp size={10} /> },
+  feat:    { label: 'Nowość',    color: 'bg-cdv-gold/20 text-cdv-gold border border-cdv-gold/40',       icon: <Sparkles size={10} /> },
+  fix:     { label: 'Naprawa',   color: 'bg-red-500/20 text-red-300 border border-red-400/40',           icon: <Wrench size={10} /> },
+  improve: { label: 'Poprawa',   color: 'bg-blue-500/20 text-blue-300 border border-blue-400/40',        icon: <TrendingUp size={10} /> },
 };
 
 const Changelog: React.FC = () => {
@@ -65,7 +65,7 @@ const Changelog: React.FC = () => {
                       v{entry.version}
                       {i === 0 && <span className="text-[9px]">NAJNOWSZA</span>}
                     </div>
-                    <span className="text-[11px] text-white/30 font-mono">{entry.date}</span>
+                    <span className="text-[11px] text-white/55 font-mono">{entry.date}</span>
                   </div>
 
                   {/* Changes list */}
@@ -78,7 +78,7 @@ const Changelog: React.FC = () => {
                             {cfg.icon}
                             {cfg.label}
                           </span>
-                          <span className="text-[13px] text-white/70 leading-snug">{change.text}</span>
+                          <span className="text-[13px] text-white/90 leading-snug">{change.text}</span>
                         </li>
                       );
                     })}

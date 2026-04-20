@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore } from './store/authStore';
 import { useGmailStore } from './store/gmailStore';
+import { useTicketStore } from './store/ticketStore';
 import Layout from './components/Layout';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
@@ -63,6 +64,15 @@ const AuthenticatedApp: React.FC = () => {
 
 const App: React.FC = () => {
   const { user, initialized } = useAuthStore();
+  const darkMode = useTicketStore((s) => s.settings.darkMode);
+
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.remove('light-mode');
+    } else {
+      document.documentElement.classList.add('light-mode');
+    }
+  }, [darkMode]);
 
   if (!initialized) {
     return (

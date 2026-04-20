@@ -33,18 +33,18 @@ const CATEGORY_ICON: Record<TicketCategory, React.ReactNode> = {
 };
 
 const STATUS_CONFIG: Record<TicketStatus, { label: string; dot: string; bg: string; text: string; border: string }> = {
-  open:          { label: 'Otwarte',    dot: 'bg-blue-400',    bg: 'bg-blue-500/15',    text: 'text-blue-300',    border: 'border-blue-400/25' },
-  'in-progress': { label: 'W trakcie',  dot: 'bg-yellow-400',  bg: 'bg-yellow-500/12',  text: 'text-yellow-300',  border: 'border-yellow-400/20' },
-  pending:       { label: 'Oczekujące', dot: 'bg-purple-400',  bg: 'bg-purple-500/12',  text: 'text-purple-300',  border: 'border-purple-400/20' },
-  resolved:      { label: 'Rozwiązane', dot: 'bg-emerald-400', bg: 'bg-emerald-500/12', text: 'text-emerald-300', border: 'border-emerald-400/20' },
-  closed:        { label: 'Zamknięte',  dot: 'bg-white/20',    bg: 'bg-white/5',         text: 'text-white/30',    border: 'border-white/10' },
+  open:          { label: 'Otwarte',    dot: 'bg-blue-400',    bg: 'bg-blue-500/20',    text: 'text-blue-200',    border: 'border-blue-400/40' },
+  'in-progress': { label: 'W trakcie',  dot: 'bg-yellow-400',  bg: 'bg-yellow-500/20',  text: 'text-yellow-200',  border: 'border-yellow-400/35' },
+  pending:       { label: 'Oczekujące', dot: 'bg-purple-400',  bg: 'bg-purple-500/20',  text: 'text-purple-200',  border: 'border-purple-400/35' },
+  resolved:      { label: 'Rozwiązane', dot: 'bg-emerald-400', bg: 'bg-emerald-500/20', text: 'text-emerald-200', border: 'border-emerald-400/35' },
+  closed:        { label: 'Zamknięte',  dot: 'bg-white/30',    bg: 'bg-white/8',         text: 'text-white/45',    border: 'border-white/15' },
 };
 
 const PRIORITY_CONFIG: Record<TicketPriority, { label: string; icon: React.ReactNode; bg: string; text: string; border: string }> = {
-  critical: { label: 'Krytyczny', icon: <Flame size={10} />,         bg: 'bg-red-500/20',     text: 'text-red-300',     border: 'border-red-500/30' },
-  high:     { label: 'Wysoki',    icon: <AlertTriangle size={10} />, bg: 'bg-orange-500/15',  text: 'text-orange-300',  border: 'border-orange-400/25' },
-  medium:   { label: 'Średni',    icon: <Zap size={10} />,           bg: 'bg-white/[0.06]',   text: 'text-white/50',         border: 'border-white/10' },
-  low:      { label: 'Niski',     icon: <Clock size={10} />,         bg: 'bg-white/6',        text: 'text-white/35',    border: 'border-white/10' },
+  critical: { label: 'Krytyczny', icon: <Flame size={10} />,         bg: 'bg-red-500/25',     text: 'text-red-200',     border: 'border-red-500/45' },
+  high:     { label: 'Wysoki',    icon: <AlertTriangle size={10} />, bg: 'bg-orange-500/20',  text: 'text-orange-200',  border: 'border-orange-400/40' },
+  medium:   { label: 'Średni',    icon: <Zap size={10} />,           bg: 'bg-white/[0.08]',   text: 'text-white/70',    border: 'border-white/15' },
+  low:      { label: 'Niski',     icon: <Clock size={10} />,         bg: 'bg-white/[0.05]',   text: 'text-white/50',    border: 'border-white/10' },
 };
 
 const Tickets: React.FC = () => {
@@ -337,12 +337,14 @@ const Tickets: React.FC = () => {
                       {CATEGORY_ICON[ticket.category]}
                     </span>
                     <p className={`text-[13px] font-semibold truncate leading-snug ${
-                      isClosed ? 'line-through text-white/25' : 'text-white/90 group-hover:text-white'
+                      isClosed ? 'line-through text-white/25' :
+                      isResolved ? 'line-through text-emerald-300/70 group-hover:text-emerald-200' :
+                      'text-white/90 group-hover:text-white'
                     }`}>
                       {ticket.title}
                     </p>
                   </div>
-                  <p className="text-[11px] text-white/30 truncate mt-0.5 pl-5">
+                  <p className="text-[11px] text-white/45 truncate mt-0.5 pl-5">
                     {ticket.requesterName}
                     {ticket.assignee && (
                       <span className="ml-1.5 text-white/20">→ {ticket.assignee}</span>

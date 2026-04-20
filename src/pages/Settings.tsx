@@ -201,7 +201,7 @@ const Settings: React.FC = () => {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
             {[
               { key: 'emailNotifications', title: 'Powiadomienia email', desc: 'Wysyłaj powiadomienia przy zmianach statusu zgłoszeń' },
-              { key: 'darkMode',           title: 'Tryb ciemny',         desc: 'Przełącz na ciemny motyw interfejsu (wkrótce)' },
+              { key: 'darkMode',           title: 'Tryb ciemny',         desc: 'Przełącz między ciemnym a jasnym motywem interfejsu' },
             ].map(({ key, title, desc }, i, arr) => (
               <div key={key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 0', borderBottom: i < arr.length - 1 ? '1px solid rgba(255,255,255,0.06)' : 'none' }}>
                 <div>
