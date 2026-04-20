@@ -15,7 +15,9 @@ const fmt = (iso?: string) => {
 };
 
 const ProtocolDocument: React.FC<ProtocolDocumentProps> = ({ protocol, person, equipment, people }) => {
-  const supervisor = people.find((p) => p.id === (protocol.supervisorId ?? person.supervisorId));
+  const supervisor = protocol.supervisorId
+    ? people.find((p) => p.id === protocol.supervisorId)
+    : undefined;
 
   return (
     <div style={{

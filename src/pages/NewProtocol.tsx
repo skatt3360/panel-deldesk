@@ -272,7 +272,7 @@ const Step3: React.FC<{
             <input
               type="checkbox"
               checked={data.indefinite}
-              onChange={(e) => { set_('indefinite', e.target.checked); if (e.target.checked) set_('expectedReturnDate', ''); }}
+              onChange={(e) => onChange({ ...data, indefinite: e.target.checked, expectedReturnDate: e.target.checked ? '' : data.expectedReturnDate })}
               style={{ accentColor: '#FF6900', width: 14, height: 14 }}
             />
             <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', fontWeight: 600 }}>Bezterminowo (brak daty zwrotu)</span>
