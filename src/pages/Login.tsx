@@ -72,7 +72,7 @@ const Login: React.FC = () => {
 
   return (
     <div
-      className="min-h-screen flex overflow-hidden"
+      className="min-h-screen flex overflow-x-hidden"
       style={{
         background: '#0C0E14',
         backgroundImage: [
@@ -122,6 +122,7 @@ const Login: React.FC = () => {
         style={{
           width: '46%', maxWidth: 540,
           borderRight: '1px solid rgba(255,255,255,0.06)',
+          overflow: 'visible',
         }}
       >
         {/* Logo */}
@@ -147,15 +148,15 @@ const Login: React.FC = () => {
 
           <div style={{ fontFamily: 'Syne, sans-serif', marginBottom: 24 }}>
             <div style={{
-              fontSize: 56, fontWeight: 900, color: '#fff',
-              letterSpacing: '-0.04em', lineHeight: 0.92,
-              marginBottom: 4, whiteSpace: 'nowrap',
+              fontSize: 'clamp(32px, 3.2vw, 48px)', fontWeight: 900, color: '#fff',
+              letterSpacing: '-0.03em', lineHeight: 1.1,
+              marginBottom: 4,
             }}>
               Panel
             </div>
             <div style={{
-              fontSize: 56, fontWeight: 900, letterSpacing: '-0.04em',
-              lineHeight: 0.92, marginBottom: 4, whiteSpace: 'nowrap',
+              fontSize: 'clamp(32px, 3.2vw, 48px)', fontWeight: 900, letterSpacing: '-0.03em',
+              lineHeight: 1.1, marginBottom: 4,
               background: 'linear-gradient(135deg, #FF6900 0%, #FFB347 60%, #FF8C00 100%)',
               WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
@@ -163,8 +164,8 @@ const Login: React.FC = () => {
               Helpdesk
             </div>
             <div style={{
-              fontSize: 56, fontWeight: 900, color: 'rgba(255,255,255,0.2)',
-              letterSpacing: '-0.04em', lineHeight: 0.92, whiteSpace: 'nowrap',
+              fontSize: 'clamp(32px, 3.2vw, 48px)', fontWeight: 900, color: 'rgba(255,255,255,0.2)',
+              letterSpacing: '-0.03em', lineHeight: 1.1,
             }}>
               CDV.
             </div>

@@ -156,9 +156,9 @@ export const useTicketStore = create<TicketState>()((setState, getState) => {
       setState({ tickets, initialized: true });
     } else {
       // First run: seed sample data
-      set(ref(db, 'tickets'), SAMPLE_TICKETS);
+      set(ref(db, 'tickets'), SAMPLE_TICKETS).catch((err) => console.error('[Firebase] seed tickets error:', err));
     }
-  });
+  }, (err) => console.error('[Firebase] tickets read error:', err));
 
   // Subscribe to /settings in Firebase
   onValue(ref(db, 'settings'), (snapshot) => {
@@ -166,9 +166,9 @@ export const useTicketStore = create<TicketState>()((setState, getState) => {
     if (data) {
       setState({ settings: data });
     } else {
-      set(ref(db, 'settings'), DEFAULT_SETTINGS);
+      set(ref(db, 'settings'), DEFAULT_SETTINGS).catch((err) => console.error('[Firebase] seed settings error:', err));
     }
-  });
+  }, (err) => console.error('[Firebase] settings read error:', err));
 
   return {
     tickets: [],

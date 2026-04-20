@@ -51,6 +51,7 @@ const NewTicket: React.FC = () => {
   const [errors, setErrors] = useState<Partial<Record<keyof NewTicketForm, string>>>({});
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const set = <K extends keyof NewTicketForm>(key: K, value: NewTicketForm[K]) => {
     setForm((f) => ({ ...f, [key]: value }));
@@ -74,9 +75,20 @@ const NewTicket: React.FC = () => {
     e.preventDefault();
     if (!validate()) return;
     setSubmitting(true);
-    const id = await addTicket(form);
-    setSubmitting(false);
-    setSubmitted(id);
+    setSubmitError(null);
+    try {
+      const id = await addTicket(form);
+      setSubmitting(false);
+      setSubmitted(id);
+    } catch (err: unknown) {
+      const code = (err as { code?: string })?.code ?? '';
+      setSubmitError(
+        code === 'PERMISSION_DENIED' || code.includes('permission')
+          ? 'Brak uprawnień do zapisu. Sprawdź połączenie i zaloguj się ponownie.'
+          : `Błąd zapisu: ${code || String(err)}`
+      );
+      setSubmitting(false);
+    }
   };
 
   if (submitted) {
@@ -253,6 +265,9 @@ const NewTicket: React.FC = () => {
             </div>
           )}
 
+          {submitError && (
+            <p style={{ color: '#f87171', fontSize: 13, marginBottom: 8, textAlign: 'right' }}>{submitError}</p>
+          )}
           <div className="flex gap-3 justify-end">
             <button
               type="button"
