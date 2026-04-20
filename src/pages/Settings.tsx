@@ -3,25 +3,26 @@ import { Save, RotateCcw, Bell, Shield, Users, Building2, CheckCircle2 } from 'l
 import { useTicketStore } from '../store/ticketStore';
 import { useAuthStore } from '../store/authStore';
 import { TECHNICIANS } from '../utils/helpers';
+import { tk } from '../utils/theme';
 
 const glass: React.CSSProperties = {
-  background: 'rgba(255,255,255,0.04)',
-  border: '1px solid rgba(255,255,255,0.08)',
+  background: tk.cardBg,
+  border: `1px solid ${tk.cardBorder}`,
   borderRadius: 14,
   padding: '24px 28px',
 };
 const inp: React.CSSProperties = {
-  background: 'rgba(255,255,255,0.05)',
-  border: '1px solid rgba(255,255,255,0.1)',
+  background: tk.inputBg,
+  border: `1px solid ${tk.inputBorder}`,
   borderRadius: 8,
   padding: '9px 13px',
-  color: '#fff',
+  color: tk.text,
   fontSize: 13,
   width: '100%',
   outline: 'none',
 };
 const sectionLbl: React.CSSProperties = {
-  fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.3)',
+  fontSize: 10, fontWeight: 700, color: tk.text4,
   textTransform: 'uppercase', letterSpacing: '0.08em',
 };
 
@@ -54,11 +55,11 @@ const Settings: React.FC = () => {
   if (role !== 'admin') {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 0' }}>
-        <div style={{ width: 56, height: 56, borderRadius: 16, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+        <div style={{ width: 56, height: 56, borderRadius: 16, background: tk.cardBg, border: `1px solid ${tk.cardBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
           <Shield size={24} style={{ color: 'rgba(255,255,255,0.2)' }} />
         </div>
-        <p style={{ fontSize: 15, fontWeight: 700, color: 'rgba(255,255,255,0.4)', margin: 0 }}>Brak dostępu</p>
-        <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.25)', marginTop: 8 }}>Ta sekcja jest dostępna tylko dla administratorów.</p>
+        <p style={{ fontSize: 15, fontWeight: 700, color: tk.text3, margin: 0 }}>Brak dostępu</p>
+        <p style={{ fontSize: 13, color: tk.text4, marginTop: 8 }}>Ta sekcja jest dostępna tylko dla administratorów.</p>
       </div>
     );
   }
@@ -86,8 +87,8 @@ const Settings: React.FC = () => {
   return (
     <div style={{ maxWidth: 820, margin: '0 auto' }}>
       <div style={{ marginBottom: 28 }}>
-        <h1 style={{ color: '#fff', fontSize: 22, fontWeight: 800, margin: 0, letterSpacing: '-0.02em' }}>Ustawienia</h1>
-        <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 13, marginTop: 4 }}>Konfiguracja systemu helpdesk CDV</p>
+        <h1 style={{ color: tk.text, fontSize: 22, fontWeight: 800, margin: 0, letterSpacing: '-0.02em' }}>Ustawienia</h1>
+        <p style={{ color: tk.text4, fontSize: 13, marginTop: 4 }}>Konfiguracja systemu helpdesk CDV</p>
       </div>
 
       <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -99,8 +100,8 @@ const Settings: React.FC = () => {
               <Building2 size={16} style={{ color: '#FF6900' }} />
             </div>
             <div>
-              <div style={{ fontSize: 14, fontWeight: 700, color: '#fff' }}>Informacje o organizacji</div>
-              <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', marginTop: 1 }}>Podstawowe dane wyświetlane w systemie</div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: tk.text }}>Informacje o organizacji</div>
+              <div style={{ fontSize: 12, color: tk.text4, marginTop: 1 }}>Podstawowe dane wyświetlane w systemie</div>
             </div>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -111,8 +112,8 @@ const Settings: React.FC = () => {
             ].map(({ id, label, hint, key, type }) => (
               <div key={id} style={{ display: 'grid', gridTemplateColumns: '220px 1fr', gap: 16, alignItems: 'start' }}>
                 <div>
-                  <label htmlFor={id} style={{ fontSize: 13, fontWeight: 600, color: '#fff', display: 'block' }}>{label}</label>
-                  <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', margin: '3px 0 0' }}>{hint}</p>
+                  <label htmlFor={id} style={{ fontSize: 13, fontWeight: 600, color: tk.text, display: 'block' }}>{label}</label>
+                  <p style={{ fontSize: 11, color: tk.text4, margin: '3px 0 0' }}>{hint}</p>
                 </div>
                 <input id={id} type={type} value={(form as any)[key]} onChange={(e) => set(key as any, e.target.value)} style={inp} />
               </div>
@@ -127,13 +128,13 @@ const Settings: React.FC = () => {
               <Shield size={16} style={{ color: '#fbbf24' }} />
             </div>
             <div>
-              <div style={{ fontSize: 14, fontWeight: 700, color: '#fff' }}>Parametry SLA</div>
-              <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', marginTop: 1 }}>Czas na rozwiązanie zgłoszenia (w godzinach)</div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: tk.text }}>Parametry SLA</div>
+              <div style={{ fontSize: 12, color: tk.text4, marginTop: 1 }}>Czas na rozwiązanie zgłoszenia (w godzinach)</div>
             </div>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             {(['slaHoursLow', 'slaHoursMedium', 'slaHoursHigh', 'slaHoursCritical'] as const).map((key) => (
-              <div key={key} style={{ padding: '16px 18px', borderRadius: 10, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
+              <div key={key} style={{ padding: '16px 18px', borderRadius: 10, background: tk.cardBg2, border: `1px solid ${tk.cardBorder2}` }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 12 }}>
                   <span style={{ width: 8, height: 8, borderRadius: '50%', background: PRIORITY_DOTS[key], flexShrink: 0 }} />
                   <span style={{ ...sectionLbl }}>{PRIORITY_LABELS[key]}</span>
@@ -145,7 +146,7 @@ const Settings: React.FC = () => {
                     onChange={(e) => set(key, parseInt(e.target.value) || 1)}
                     style={{ ...inp, width: 80, padding: '7px 10px', fontWeight: 700 }}
                   />
-                  <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', fontWeight: 500 }}>godz.</span>
+                  <span style={{ fontSize: 12, color: tk.text4, fontWeight: 500 }}>godz.</span>
                 </div>
               </div>
             ))}
@@ -159,14 +160,14 @@ const Settings: React.FC = () => {
               <Users size={16} style={{ color: '#a78bfa' }} />
             </div>
             <div>
-              <div style={{ fontSize: 14, fontWeight: 700, color: '#fff' }}>Zespół i przypisania</div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: tk.text }}>Zespół i przypisania</div>
             </div>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr', gap: 16, alignItems: 'start', marginBottom: 20 }}>
             <div>
-              <label style={{ fontSize: 13, fontWeight: 600, color: '#fff', display: 'block' }}>Domyślny technik</label>
-              <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', margin: '3px 0 0' }}>Przypisywany do nowych zgłoszeń</p>
+              <label style={{ fontSize: 13, fontWeight: 600, color: tk.text, display: 'block' }}>Domyślny technik</label>
+              <p style={{ fontSize: 11, color: tk.text4, margin: '3px 0 0' }}>Przypisywany do nowych zgłoszeń</p>
             </div>
             <select value={form.defaultAssignee} onChange={(e) => set('defaultAssignee', e.target.value)} style={inp}>
               {TECHNICIANS.map((t) => <option key={t} value={t}>{t}</option>)}
@@ -177,7 +178,7 @@ const Settings: React.FC = () => {
             <div style={{ ...sectionLbl, marginBottom: 12 }}>Aktywni technicy ({TECHNICIANS.length})</div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
               {TECHNICIANS.map((t) => (
-                <div key={t} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 12px', borderRadius: 20, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', fontSize: 13, fontWeight: 500, color: 'rgba(255,255,255,0.7)' }}>
+                <div key={t} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 12px', borderRadius: 20, background: tk.cardBg, border: `1px solid ${tk.cardBorder}`, fontSize: 13, fontWeight: 500, color: tk.text2 }}>
                   <div style={{ width: 22, height: 22, borderRadius: '50%', background: 'rgba(255,105,0,0.15)', border: '1px solid rgba(255,105,0,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 800, color: '#FF6900', flexShrink: 0 }}>
                     {t.charAt(0)}
                   </div>
@@ -195,7 +196,7 @@ const Settings: React.FC = () => {
               <Bell size={16} style={{ color: '#4ade80' }} />
             </div>
             <div>
-              <div style={{ fontSize: 14, fontWeight: 700, color: '#fff' }}>Powiadomienia i wygląd</div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: tk.text }}>Powiadomienia i wygląd</div>
             </div>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
@@ -205,8 +206,8 @@ const Settings: React.FC = () => {
             ].map(({ key, title, desc }, i, arr) => (
               <div key={key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 0', borderBottom: i < arr.length - 1 ? '1px solid rgba(255,255,255,0.06)' : 'none' }}>
                 <div>
-                  <p style={{ fontSize: 13, fontWeight: 600, color: '#fff', margin: 0 }}>{title}</p>
-                  <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', margin: '3px 0 0' }}>{desc}</p>
+                  <p style={{ fontSize: 13, fontWeight: 600, color: tk.text, margin: 0 }}>{title}</p>
+                  <p style={{ fontSize: 12, color: tk.text4, margin: '3px 0 0' }}>{desc}</p>
                 </div>
                 <Toggle value={(form as any)[key]} onChange={() => set(key as any, !(form as any)[key])} />
               </div>

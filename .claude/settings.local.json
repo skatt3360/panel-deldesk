@@ -39,7 +39,20 @@
       "WebFetch(domain:fontsinuse.com)",
       "WebFetch(domain:www.uniforma.pl)",
       "WebFetch(domain:brandfetch.com)",
-      "Bash(git remote:*)"
+      "Bash(git remote:*)",
+      "Bash(netlify status *)",
+      "Bash(npx netlify-cli *)",
+      "Bash(sed -i '' 's/color: '\\\\''#fff'\\\\'', fontSize: 22/color: tk.text, fontSize: 22/g' src/pages/Settings.tsx)",
+      "Bash(sed -i '' 's/{ fontSize: 14, fontWeight: 700, color: '\\\\''#fff'\\\\'' }/{ fontSize: 14, fontWeight: 700, color: tk.text }/g' src/pages/Settings.tsx)",
+      "Bash(sed -i '' 's/color: '\\\\''#fff'\\\\'', display: '\\\\''block'\\\\''/color: tk.text, display: '\\\\''block'\\\\''/g' src/pages/Settings.tsx)",
+      "Bash(sed -i '' 's/fontSize: 13, fontWeight: 600, color: '\\\\''#fff'\\\\'', margin: 0/fontSize: 13, fontWeight: 600, color: tk.text, margin: 0/g' src/pages/Settings.tsx)",
+      "Bash(sed -i '' 's/color: '\\\\''rgba\\(255,255,255,0.35\\)'\\\\'', fontSize: 13, marginTop: 4/color: tk.text4, fontSize: 13, marginTop: 4/g' src/pages/Settings.tsx)",
+      "Bash(sed -i '' 's/color: '\\\\''rgba\\(255,255,255,0.35\\)'\\\\'', marginTop: 1/color: tk.text4, marginTop: 1/g' src/pages/Settings.tsx)",
+      "Bash(sed -i '' 's/color: '\\\\''rgba\\(255,255,255,0.35\\)'\\\\'', margin: '\\\\''3px 0 0'\\\\''/color: tk.text4, margin: '\\\\''3px 0 0'\\\\''/g' src/pages/Settings.tsx)",
+      "Bash(sed -i '' 's/color: '\\\\''rgba\\(255,255,255,0.35\\)'\\\\'', fontWeight: 500/color: tk.text4, fontWeight: 500/g' src/pages/Settings.tsx)",
+      "Bash(sed -i '' 's/color: '\\\\''rgba\\(255,255,255,0.4\\)'\\\\'', margin: 0/color: tk.text3, margin: 0/g' src/pages/Settings.tsx)",
+      "Bash(sed -i '' 's/background: '\\\\''rgba\\(255,255,255,0.03\\)'\\\\'', border: '\\\\''1px solid rgba\\(255,255,255,0.07\\)'\\\\''/background: tk.cardBg2, border: `1px solid ${tk.cardBorder2}`/g' src/pages/Settings.tsx)",
+      "Bash(sed -i '' 's/background: '\\\\''rgba\\(255,255,255,0.04\\)'\\\\'', border: '\\\\''1px solid rgba\\(255,255,255,0.08\\)'\\\\''/background: tk.cardBg, border: `1px solid ${tk.cardBorder}`/g' src/pages/Settings.tsx)"
     ]
   }
 }

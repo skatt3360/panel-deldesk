@@ -130,15 +130,17 @@ const CalendarPage: React.FC = () => {
     const isEventPast = isPast(new Date(event.end));
     return {
       style: {
-        backgroundColor: isEventPast ? '#9CA3AF' : color,
+        backgroundColor: isEventPast ? 'rgba(100,100,120,0.55)' : color,
         borderColor: 'transparent',
-        color: '#fff',
+        color: isEventPast ? 'rgba(255,255,255,0.5)' : '#fff',
         borderRadius: '8px',
         border: 'none',
         fontSize: '11px',
         fontWeight: '600',
         padding: '2px 8px',
-        opacity: isEventPast ? 0.65 : 1,
+        opacity: isEventPast ? 0.7 : 1,
+        textDecoration: isEventPast ? 'line-through' : 'none',
+        textDecorationColor: 'rgba(255,255,255,0.5)',
         fontFamily: 'Plus Jakarta Sans, sans-serif',
       },
     };
@@ -209,6 +211,24 @@ const CalendarPage: React.FC = () => {
     await deleteEvent(id);
     setShowDetailModal(false);
     setSelectedEvent(null);
+  };
+
+  // Custom date header — applies strikethrough for past days
+  const DateHeader = ({ date, label }: { date: Date; label: string }) => {
+    const today = startOfDay(new Date());
+    const isPastDay = isBefore(startOfDay(date), today);
+    const isCurrentDay = isToday(date);
+    return (
+      <span style={{
+        textDecoration: isPastDay && !isCurrentDay ? 'line-through' : 'none',
+        textDecorationColor: 'rgba(255,255,255,0.3)',
+        opacity: isPastDay && !isCurrentDay ? 0.45 : 1,
+        color: isCurrentDay ? '#C49EE8' : undefined,
+        fontWeight: isCurrentDay ? 800 : 600,
+      }}>
+        {label}
+      </span>
+    );
   };
 
   // Custom toolbar
@@ -342,7 +362,10 @@ const CalendarPage: React.FC = () => {
               culture="pl"
               style={{ height: '100%' }}
               popup
-              components={{ toolbar: CustomToolbar }}
+              components={{
+                toolbar: CustomToolbar,
+                month: { dateHeader: DateHeader },
+              }}
             />
           </div>
         </div>

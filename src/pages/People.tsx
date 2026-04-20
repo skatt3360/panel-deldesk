@@ -8,6 +8,7 @@ import { usePeopleStore } from '../store/peopleStore';
 import { useEquipmentStore } from '../store/equipmentStore';
 import { Person, Department } from '../types';
 import { CDV_ROOMS } from '../utils/helpers';
+import { tk } from '../utils/theme';
 
 // ─── Dept color palette ───────────────────────────────────────────────────────
 const DEPT_COLORS = [
@@ -68,17 +69,17 @@ interface PersonFormProps {
 }
 
 const inp: React.CSSProperties = {
-  background: 'rgba(255,255,255,0.06)',
-  border: '1px solid rgba(255,255,255,0.12)',
+  background: tk.inputBg,
+  border: `1px solid ${tk.inputBorder}`,
   borderRadius: 10,
   padding: '9px 13px',
-  color: '#fff',
+  color: tk.text,
   fontSize: 13,
   width: '100%',
   outline: 'none',
 };
 const lbl: React.CSSProperties = {
-  fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.4)',
+  fontSize: 10, fontWeight: 700, color: tk.text4,
   marginBottom: 5, display: 'block', textTransform: 'uppercase', letterSpacing: '0.08em',
 };
 
@@ -230,8 +231,8 @@ const PersonForm: React.FC<PersonFormProps> = ({ initial, departments, people, e
           {formError}
         </div>
       )}
-      <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', paddingTop: 8, borderTop: '1px solid rgba(255,255,255,0.07)' }}>
-        <button onClick={onCancel} style={{ padding: '9px 18px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.12)', background: 'transparent', color: 'rgba(255,255,255,0.6)', fontSize: 13, cursor: 'pointer', fontWeight: 600 }}>
+      <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', paddingTop: 8, borderTop: `1px solid ${tk.cardBorder}` }}>
+        <button onClick={onCancel} style={{ padding: '9px 18px', borderRadius: 10, border: `1px solid ${tk.inputBorder}`, background: 'transparent', color: tk.text3, fontSize: 13, cursor: 'pointer', fontWeight: 600 }}>
           Anuluj
         </button>
         <button
@@ -272,8 +273,8 @@ const PersonCard: React.FC<PersonCardProps> = ({ person, people, equipmentCount,
   return (
     <div
       style={{
-        background: 'rgba(255,255,255,0.04)',
-        border: `1px solid ${person.isManager ? 'rgba(255,105,0,0.2)' : 'rgba(255,255,255,0.08)'}`,
+        background: tk.cardBg,
+        border: `1px solid ${person.isManager ? 'rgba(255,105,0,0.2)' : tk.cardBorder}`,
         borderRadius: 16,
         display: 'flex', flexDirection: 'column',
         overflow: 'hidden',
@@ -285,7 +286,7 @@ const PersonCard: React.FC<PersonCardProps> = ({ person, people, equipmentCount,
         e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.2)';
       }}
       onMouseLeave={(e) => {
-        e.currentTarget.style.borderColor = person.isManager ? 'rgba(255,105,0,0.2)' : 'rgba(255,255,255,0.08)';
+        e.currentTarget.style.borderColor = person.isManager ? 'rgba(255,105,0,0.2)' : 'rgba(var(--c-border-rgb, 255,255,255), 0.08)';
         e.currentTarget.style.transform = 'none';
         e.currentTarget.style.boxShadow = 'none';
       }}
@@ -300,7 +301,7 @@ const PersonCard: React.FC<PersonCardProps> = ({ person, people, equipmentCount,
 
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ fontSize: 14.5, fontWeight: 800, color: '#fff', lineHeight: 1.2 }}>
+              <span style={{ fontSize: 14.5, fontWeight: 800, color: tk.text, lineHeight: 1.2 }}>
                 {person.firstName} {person.lastName}
               </span>
               {person.isManager && (
@@ -309,7 +310,7 @@ const PersonCard: React.FC<PersonCardProps> = ({ person, people, equipmentCount,
                 </span>
               )}
             </div>
-            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', marginTop: 2, lineHeight: 1.3 }}>{person.position}</div>
+            <div style={{ fontSize: 12, color: tk.text3, marginTop: 2, lineHeight: 1.3 }}>{person.position}</div>
             <div style={{ marginTop: 6 }}>
               <span style={{ display: 'inline-block', padding: '2px 8px', borderRadius: 20, fontSize: 10.5, fontWeight: 700, background: `${color}18`, color, border: `1px solid ${color}33` }}>
                 {person.department}
@@ -345,32 +346,32 @@ const PersonCard: React.FC<PersonCardProps> = ({ person, people, equipmentCount,
         </div>
 
         {/* Contact & info */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 5, borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 10 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 5, borderTop: `1px solid ${tk.cardBorder2}`, paddingTop: 10 }}>
           {person.email && (
-            <a href={`mailto:${person.email}`} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'rgba(255,255,255,0.6)', textDecoration: 'none' }}>
-              <Mail size={11} style={{ color: 'rgba(255,255,255,0.3)', flexShrink: 0 }} />
+            <a href={`mailto:${person.email}`} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: tk.text3, textDecoration: 'none' }}>
+              <Mail size={11} style={{ color: tk.text5, flexShrink: 0 }} />
               <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{person.email}</span>
             </a>
           )}
           {person.phone && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'rgba(255,255,255,0.6)' }}>
-              <Phone size={11} style={{ color: 'rgba(255,255,255,0.3)', flexShrink: 0 }} />{person.phone}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: tk.text3 }}>
+              <Phone size={11} style={{ color: tk.text5, flexShrink: 0 }} />{person.phone}
             </div>
           )}
           {person.room && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'rgba(255,255,255,0.6)' }}>
-              <MapPin size={11} style={{ color: 'rgba(255,255,255,0.3)', flexShrink: 0 }} />{person.room}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: tk.text3 }}>
+              <MapPin size={11} style={{ color: tk.text5, flexShrink: 0 }} />{person.room}
             </div>
           )}
           {supervisor && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>
-              <UserCheck size={11} style={{ color: 'rgba(255,255,255,0.3)', flexShrink: 0 }} />
-              <span>Przełożony: <span style={{ color: 'rgba(255,255,255,0.75)', fontWeight: 600 }}>{supervisor.firstName} {supervisor.lastName}</span></span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: tk.text4 }}>
+              <UserCheck size={11} style={{ color: tk.text5, flexShrink: 0 }} />
+              <span>Przełożony: <span style={{ color: tk.text2, fontWeight: 600 }}>{supervisor.firstName} {supervisor.lastName}</span></span>
             </div>
           )}
           {person.notes && (
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 12, color: 'rgba(255,255,255,0.4)' }}>
-              <StickyNote size={11} style={{ color: 'rgba(255,255,255,0.25)', flexShrink: 0, marginTop: 1 }} />
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 12, color: tk.text4 }}>
+              <StickyNote size={11} style={{ color: tk.text5, flexShrink: 0, marginTop: 1 }} />
               <span style={{ overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{person.notes}</span>
             </div>
           )}
@@ -397,22 +398,22 @@ const DeptManager: React.FC = () => {
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 16, overflow: 'hidden', marginTop: 24 }}>
+    <div style={{ background: tk.cardBg2, border: `1px solid ${tk.cardBorder}`, borderRadius: 16, overflow: 'hidden', marginTop: 24 }}>
       <button
         onClick={() => setExpanded((v) => !v)}
-        style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 20px', background: 'none', border: 'none', cursor: 'pointer', color: '#fff' }}
+        style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 20px', background: 'none', border: 'none', cursor: 'pointer', color: tk.text }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <Building2 size={15} style={{ color: 'rgba(255,255,255,0.4)' }} />
+          <Building2 size={15} style={{ color: tk.text4 }} />
           <span style={{ fontSize: 13, fontWeight: 700 }}>Zarządzanie działami ({departments.length})</span>
         </div>
         {expanded
-          ? <ChevronUp size={15} style={{ color: 'rgba(255,255,255,0.35)' }} />
-          : <ChevronDown size={15} style={{ color: 'rgba(255,255,255,0.35)' }} />}
+          ? <ChevronUp size={15} style={{ color: tk.text4 }} />
+          : <ChevronDown size={15} style={{ color: tk.text4 }} />}
       </button>
 
       {expanded && (
-        <div style={{ padding: '0 20px 20px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+        <div style={{ padding: '0 20px 20px', borderTop: `1px solid ${tk.cardBorder2}` }}>
           <div style={{ display: 'flex', gap: 8, marginTop: 16, marginBottom: 16 }}>
             <input
               value={newName}
